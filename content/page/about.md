@@ -12,4 +12,8 @@ menu:
         weight: -10
         pre: user
 ---
-[My Github](https://github.com/ASjet)
+Contact me
+
+📫Aryan.ITFS@iCloud.com
+
+[Github](https://github.com/ASjet)

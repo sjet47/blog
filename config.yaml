@@ -35,10 +35,10 @@ params:
 
     sidebar:
         emoji:
-        subtitle: "📫Aryan.ITFS@iCloud.com"
+        subtitle: "Think Different"
         avatar:
             local: true
-            src: img/avatar.jpg
+            src: img/avatar.png
 
     article:
         math: true
