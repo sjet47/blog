@@ -5,6 +5,7 @@
 .vscode
 .swp
 .bak
+build.ps1
 node_modules
 *~
 package.json

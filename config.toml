@@ -147,8 +147,7 @@ favicon = "/images/ica.png"
     [params.page.comment.gitalk]
       enable = true
       owner = "ASjet"
-      repo = "https://github.com/ASjet/blog"
-      id = "location.href"
+      repo = "blog"
       clientId = "cf92fc7c8b742962bc82"
       clientSecret = "1e3071387b30ad28a356675033159c9986cf453d"
 
