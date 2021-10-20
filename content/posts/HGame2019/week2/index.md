@@ -1,14 +1,27 @@
 ---
 title: Hgame week2
-description: 2020 VidarTeam Hgame Writeup
+subtitle: ""
 date: 2020-02-08
-slug: 2020hgamew2
-license: CC BY-NC-ND
-categories:
-    - Hgame
+lastmod: 2020-02-08
+draft: false
+description: 2020 VidarTeam Hgame Writeup
 tags:
     - Writeup
+series:
+    - HGame
+hiddenFromHomePage: false
+hiddenFromSearch: false
+featuredImage: ""
+featuredImagePreview: ""
+avatarURL : "favicon.svg"
+toc:
+  enable: true
+math:
+  enable: true
+lightgallery: false
+license: "CC BY-NC-ND"
 ---
+<!-- Main Content -->
 
 ## Web
 

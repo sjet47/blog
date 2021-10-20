@@ -1,14 +1,30 @@
 ---
-title: Data Lab
-description: CS:APP DataLab Writeup
+title: "Data Lab"
+subtitle: ""
 date: 2021-04-09
-slug: datalab-writeup
-license: CC BY-NC-ND
-categories:
-    - CS:APP-Lab
+lastmod: 2021-04-09
+draft: false
+description: "CS:APP DataLab Writeup"
 tags:
     - Writeup
+categories:
+    - Lab Handout
+series:
+    - CS:APP-Lab
+
+hiddenFromHomePage: false
+hiddenFromSearch: false
+featuredImage: ""
+featuredImagePreview: ""
+avatarURL : "favicon.svg"
+toc:
+  enable: true
+math:
+  enable: true
+lightgallery: false
+license: "CC BY-NC-ND"
 ---
+<!-- Main Content -->
 
 ## 前言
 

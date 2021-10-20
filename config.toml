@@ -1,0 +1,272 @@
+baseURL = "https://aryansjet.top"
+# [en, zh-cn, fr, ...] determines default content language
+defaultContentLanguage = "en"
+# language code
+languageCode = "en"
+
+title = "AryanSjet's Blog"
+# Change the default theme to be use when building the site with Hugo
+theme = "DoIt"
+enableGitInfo = false
+enableEmoji = true
+favicon = "/images/ica.png"
+
+[params]
+  # DoIt theme version
+  version = "0.2.X"
+  description = "AryanSjet's Blog"
+  keywords = ["AryanSjet", "ASjet", "Blog"]
+  defaultTheme = "dark"
+  dateFormat = "2006/01/02"
+  images = ["/images/avatar.png"]
+  enablePWA = true
+  favicon = "/images/ica.png"
+
+  [params.app]
+    title = "ASjet-Blog"
+    noFavicon = false
+    iconColor = "#767472"
+    titleColor = "#767472"
+    svgFavicon = "favicon.svg"
+
+  [params.search]
+    enable = true
+    type = "fuse"
+    contentLength = 4000
+    placeholder = "Search"
+    maxResultLength = 20
+    snippetLength = 50
+    highlightTag = "em"
+    absoluteURL = false
+    [params.search.fuse]
+      isCaseSensitive = false
+      minMatchCharLength = 2
+      findAllMatches = false
+      location = 0
+      threshold = 0.1
+      distance = 100
+      ignoreLocation = true
+      useExtendedSearch = true
+      ignoreFieldNorm = false
+
+  [params.header]
+    desktopMode = "fixed"
+    mobileMode = "auto"
+    themeChangeMode = "switch"
+    [params.header.title]
+      # logo = "favicon.png"
+      name = "AryanSjet"
+
+  [params.footer]
+    enable = true
+    hugo = true
+    copyright = true
+    author = true
+    since = 2020
+    license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
+
+  [params.home]
+    rss = 10
+    [params.home.profile]
+    enable = true
+    social = true
+    avatarURL = "/images/avatar.png"
+    title = "AryanSjet's Blog"
+    subtitle = "Think different"
+    typeit = true
+
+  [params.home.posts]
+    enable = true
+    paginate = 10
+
+  [params.social]
+    social = true
+    # [params.social.GitHub]
+    #   weight = 1
+    #   id = "ASjet"
+    #   title = "github.com/ASjet"
+    [params.social.Twitter]
+      weight = 2
+      id = "AryanSjet"
+      title = "@AryanSjet"
+    [params.social.Email]
+      weight = 3
+      id = "Aryan.ITFS@icloud.com"
+      title = "Aryan.ITFS@icloud.com"
+
+  [params.section]
+    paginate = 20
+    dateFormat = "01/02"
+    rss = 10
+    [params.section.recentlyUpdate]
+      enable = true
+      rss = true
+      days = 30
+      maxCount = 10
+
+  [params.list]
+    paginate = 20
+    dateFormat = "01/02"
+    rss = 10
+
+  [params.page]
+    hiddenFromHomePage = false
+    hiddenFromSearch = false
+    twemoji = false
+    lightgallery = false
+    ruby = true
+    fraction = true
+    fontawesome = true
+    linkToMarkdown = true
+    rssFullText = true
+    pageStyle = "wide"
+  [params.page.outdatedArticleReminder]
+    enable = true
+    reminder = 360
+    warning = 720
+  [params.page.toc]
+    enable = true
+    keepStatic = false
+    auto = true
+  [params.page.code]
+    copy = true
+    maxShownLines = 10
+  [params.page.math]
+    enable = true
+    blockLeftDelimiter = "$$"
+    blockRightDelimiter = "$$"
+    inlineLeftDelimiter = "$"
+    inlineRightDelimiter = "$"
+    copyTex = true
+    mhchem = true
+  [params.page.share]
+    enable = true
+    Twitter = true
+  [params.page.comment]
+    enable = true
+    [params.page.comment.gitalk]
+      enable = true
+      owner = "ASjet"
+      repo = "https://github.com/ASjet/blog"
+      id = "location.href"
+      clientId = "cf92fc7c8b742962bc82"
+      clientSecret = "1e3071387b30ad28a356675033159c9986cf453d"
+
+  [params.typeit]
+    # ms per character
+    speed = 100
+    # blinking speed of cursor(ms)
+    cursorSpeed = 1000
+    cursorChar = "|"
+    duration = -1
+
+
+[menu]
+  [[menu.main]]
+    identifier = "posts"
+    # you can add extra information before the name (HTML format is supported), such as icons
+    pre = ""
+    # you can add extra information after the name (HTML format is supported), such as icons
+    post = ""
+    name = "Posts"
+    url = "/posts/"
+    # title will be shown when you hover on this menu link
+    title = ""
+    weight = 1
+  [[menu.main]]
+    identifier = "tags"
+    pre = ""
+    post = ""
+    name = "Tags"
+    url = "/tags/"
+    title = ""
+    weight = 2
+  [[menu.main]]
+    identifier = "categories"
+    pre = ""
+    post = ""
+    name = "Categories"
+    url = "/categories/"
+    title = ""
+    weight = 3
+  [[menu.main]]
+    identifier = "series"
+    pre = ""
+    post = ""
+    name = "Series"
+    url = "/series/"
+    title = ""
+    weight = 4
+  [[menu.main]]
+    identifier = "github"
+    pre = "<i class='fab fa-github fa-fw'></i>"
+    post = ""
+    name = "Github/ASjet"
+    url = "https://github.com/ASjet"
+    title = "GitHub"
+    weight = 5
+
+# Markup related configuration in Hugo
+[markup]
+  # Syntax Highlighting (https://gohugo.io/content-management/syntax-highlighting)
+  [markup.highlight]
+    codeFences = true
+    guessSyntax = true
+    lineNos = true
+    lineNumbersInTable = true
+    # false is a necessary configuration (https://github.com/dillonzq/LoveIt/issues/158)
+    noClasses = false
+
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      definitionList = true
+      footnote = true
+      linkify = true
+      strikethrough = true
+      table = true
+      taskList = true
+      typographer = true
+    [markup.goldmark.renderer]
+      # whether to use HTML tags directly in the document
+      # 是否在文档中直接使用 HTML 标签
+      unsafe = true
+
+
+[author]
+  name = "ASjet"
+  email = "Aryan.ITFS@icloud.com"
+  link = "https://github.com/ASjet"
+  avatar = "/images/avatar.png"
+
+
+[Permalinks]
+  posts = ":year/:month/:filename"
+  # posts = ":filename"
+
+
+[privacy]
+  [privacy.twitter]
+    enableDNT = true
+
+  [privacy.youtube]
+    privacyEnhanced = true
+
+
+[outputFormats.MarkDown]
+  mediaType = "text/plain"
+  isPlainText = true
+  isHTML = false
+
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+  section = ["HTML", "RSS"]
+  taxonomy = ["HTML", "RSS"]
+  taxonomyTerm = ["HTML"]
+
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+  series = "series"
