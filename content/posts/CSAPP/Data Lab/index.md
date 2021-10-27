@@ -34,7 +34,7 @@ license: "CC BY-NC-ND"
 
 由于题目涉及到较多的构造，因此尽量将常数和表达式写成自解释名称的变量，便于阅读
 
-##### 环境配置
+### 环境配置
 
 OS: Ubuntu 20.10 x86_64
 
@@ -70,7 +70,7 @@ OS: Ubuntu 20.10 x86_64
 - 右移操作是算数移位(保留符号位)
 - 当移位位数为负或大于31时具有不可预测的行为
 
-#### 题目
+#### 题目内容
 
 ##### bitXor(x, y)
 
@@ -331,8 +331,8 @@ int logicalNeg(int x)
 ```c
 int howManyBits(int x)
 {
-    int neg_flag = x >> 31;	// 0xFFFFFFFF if x < 0 else 0
-    int xp = x ^ neg_flag; 	// (x & ~neg_flag) | (~x & neg_flag)
+    int neg_flag = x >> 31; // 0xFFFFFFFF if x < 0 else 0
+    int xp = x ^ neg_flag;  // (x & ~neg_flag) | (~x & neg_flag)
     int i = 0;
     i = i + ((!!(xp >> (i + 16))) << 4);
     i = i + ((!!(xp >> (i + 8))) << 3);
@@ -370,7 +370,7 @@ int howManyBits(int x)
 - 除int和unsigned外的任何数据类型和数据结构
 - 浮点类型的操作符和常量
 
-#### 题目
+#### 题目内容
 
 ##### floatScale2(uf)
 
@@ -404,7 +404,7 @@ unsigned floatScale2(unsigned uf)
 
     if (e != 0) // Normalized
         return (uf & nexp_mask) | ((e + 1) << 23);
-    else 		// Denormalized
+    else        // Denormalized
         return (uf & nfrac_mask) | (f << 1);
 }
 ```
