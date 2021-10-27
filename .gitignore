@@ -5,8 +5,6 @@
 .vscode
 .swp
 .bak
-build.*
-newPost.*
 node_modules
 *~
 package.json

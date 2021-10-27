@@ -1,0 +1,1 @@
+Get-Date -UFormat '+%Y-%m-%dT%H:%M:%S%Z:00' | clip.exe
