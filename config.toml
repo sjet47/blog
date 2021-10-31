@@ -130,7 +130,7 @@ favicon = "/images/ica.png"
     auto = true
   [params.page.code]
     copy = true
-    maxShownLines = 10
+    maxShownLines = 24
   [params.page.math]
     enable = true
     blockLeftDelimiter = "$$"
