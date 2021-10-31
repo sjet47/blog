@@ -11,8 +11,6 @@ series:
     - HGame
 hiddenFromHomePage: false
 hiddenFromSearch: false
-featuredImage: ""
-featuredImagePreview: ""
 avatarURL : "favicon.svg"
 toc:
   enable: true
