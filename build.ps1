@@ -1,2 +1,2 @@
 hugo --gc
-hugo server -D -p 80
+hugo server -DEF -p 80
