@@ -11,6 +11,8 @@ enableGitInfo = false
 enableEmoji = true
 favicon = "/images/ica.png"
 
+hasCJKLanguage = true
+
 [params]
   # DoIt theme version
   version = "0.2.X"
