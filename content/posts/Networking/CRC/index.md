@@ -28,8 +28,12 @@ license: "CC BY-NC-ND"
 
 ## CRC简介
 
-[CRC(Cyclic Redundancy Check)](https://wikipedia.org/wiki/Cyclic_redundancy_check)
-循环冗余校验是在数字通信和数据存储领域常用的一种错误检测算法, 由于该算法硬件实现简单, 且容易进行数学分析, 尤其善于检测信道干扰所导致的误码, 因此得到了广泛应用。CRC算法由[W. Wesley Perterson](https://wikipedia.org/wiki/W._Wesley_Peterson)于1961年发表。
+[CRC(Cyclic Redundancy Check, 循环冗余校验)](https://wikipedia.org/wiki/Cyclic_redundancy_check)
+是在数字通信和数据存储领域常用的一种错误检测算法, 由于该算法硬件实现简单,
+且容易进行数学分析, 尤其善于检测信道干扰所导致的误码, 因此得到了广泛应用。
+CRC算法由[W. Wesley Perterson](https://wikipedia.org/wiki/W._Wesley_Peterson)于1961年发表。
+
+<!--more-->
 
 ## 原理
 

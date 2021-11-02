@@ -21,6 +21,8 @@ license: "CC BY-NC-ND"
 ---
 <!-- Main Content -->
 
+<!--more-->
+
 ## Web
 
 ### Cosmos的新语言

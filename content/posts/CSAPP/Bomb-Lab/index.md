@@ -30,6 +30,8 @@ license: "CC BY-NC-ND"
 
 读完CS: APP第三章后，终于来到了期待已久的Bomb Lab环节，可能由于我拿到的是B&O提供的[Self-Handout Version](http://csapp.cs.cmu.edu/3e/bomb.tar)，加上之前有一点Re经验，所以难度没有现象中那么大，花了半个晚上就做完了。但是第一遍做的时候并没有仔细的一点一点读汇编，基本上是看个大概然后依靠直觉就得到答案了，这里再重新认真做一遍做个记录
 
+<!--more-->
+
 ### 环境
 
 Ubuntu 20.04.2 LTS on Windows 10 x86_64(WSL1)
