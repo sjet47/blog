@@ -11,7 +11,6 @@ tags:
 categories:
   - Algorithm
 series:
-  - CNATDA
 hiddenFromHomePage: false
 hiddenFromSearch: false
 featuredImage: ""
