@@ -62,13 +62,13 @@ TCP使用**序号**(Sequence Number)对发送的字节流进行编号，接收�
 
 考虑一个单向传输数据的TCP连接
 
-1. 发送方维护两个变量`SND.NXT`和`SND.UNA`并初始化为相同的**序号初始值**(Initial Sequence Number, ISN)。
-  `ISN`通常会随机选取[^2]以防御[TCP序号预测攻击](https://wikipedia.org/wiki/TCP_sequence_prediction_attack)。
-  把这两个变量的值减去`ISN`的结果作为相对值，从而能够将`ISN`当作相对`0`来考虑，
-  相对值只与发送的字节数有关而与`ISN`的取值无关。其中
+1. 发送方维护两个变量`SND.NXT`和`SND.UNA`并初始化为相同的**序号初始值**(Initial Send Sequence number, ISS)。
+  `ISS`通常会随机选取[^2]以防御[TCP序号预测攻击](https://wikipedia.org/wiki/TCP_sequence_prediction_attack)。
+  把这两个变量的值减去`ISS`的结果作为相对值，从而能够将`ISS`当作相对`0`来考虑，
+  相对值只与发送的字节数有关而与`ISS`的取值无关。其中
     - `SND.NXT`表示发送方下个数据包的序号，其相对值表示尚未发送的数据在数据流中的字节位置
     - `SND.UNA`表示尚未被确认的最小序号，其相对值表示尚未被确认的数据在数据流中的字节位置
-2. 接收方维护一个变量`RCV.NXT`并使用收到的第一个数据包的`SEG.SEQ`作为初始值(即`ISN`)
+2. 接收方维护一个变量`RCV.NXT`并使用收到的第一个数据包的`SEG.SEQ`作为初始值(即`ISS`)
 3. TCP连接建立，详见[TCP连接]
 4. 发送方发送序号为`SND.NXT`，包含数据长度为`n`的报文，并将`SND.NXT`更新为`SND.NXT`+`n`
 5. 接受方收到序号为`RCV.NXT`的数据包并确认无误后将`RCV.NXT`更新为`RCV.NXT`+`n`
@@ -84,7 +84,8 @@ TCP使用**序号**(Sequence Number)对发送的字节流进行编号，接收�
   若后续数据包完全或部分填补间隔(Gap)，
   则立即发送确认号为间隔最左端(lower end of the gap)的确认包
 
-因为TCP是全双工通信，所以通常通信双方会各自维护发送方和接收方两套变量。
+实际上，TCP通信双方都会各自维护发送方和接收方两套变量，
+因此在TCP数据传输中会有两个序号和两个响应号。
 
 ## 错误检测: 校验和
 
@@ -164,9 +165,12 @@ TCP使用**超时**(Timeout)机制检测丢包，当发送一个数据包后在*
 
 发送方维护两个变量`SRTT`(Smoothed Round-Trip Time)和`RTTVAR`(Round-Trip Time Variation)，
 并且选择`G`作为时钟粒度(Clock Granularity)，则有
+
+{{< math >}}
 $$
-  \mathrm{RTO}= \mathit{max} \left \\{ \mathrm{SRTT} + \mathit{max} \left \\{ \mathrm{G}, \mathrm{K}\cdot \mathrm{RTTVAR} \right \\}, \\;1 \right \\}
+  \mathrm{RTO} = \mathit{max}\{\mathrm{SRTT} + \mathit{max} \{\mathrm{G}, \mathrm{K}\cdot \mathrm{RTTVAR}\},\;1\}
 $$
+{{< /math >}}
 
 其中$\mathrm{K}=4$
 
@@ -174,12 +178,16 @@ $$
 由于首次通信发生之前无法测出`RTT`的值，因此通常选择`1s`[^6]作为`RTO`的初始值。
 
 在后续通信过程中，每次测量出新`RTT`后按以下顺序更新`SRTT`和`RTTVAR`，最后再更新`RTO`
+
+{{< math >}}
 $$
 \begin{matrix}
-\mathrm{RTTVAR} &=& (1 - \boldsymbol\beta)\cdot \mathrm{RTTVAR} + \boldsymbol\beta \cdot \|\mathrm{SRTT} - \mathrm{RTT}\| \\\ \mathrm{SRTT}
-&=& (1 - \boldsymbol\alpha)\cdot \mathrm{SRTT} + \boldsymbol\alpha \cdot \mathrm{RTT}
+\mathrm{RTTVAR}&=&(1-\boldsymbol\beta)\cdot \mathrm{RTTVAR}+\boldsymbol\beta \cdot |\mathrm{SRTT}-\mathrm{RTT}|\\
+\mathrm{SRTT}&=&(1-\boldsymbol\alpha)\cdot \mathrm{SRTT}+\boldsymbol\alpha \cdot \mathrm{RTT}
 \end{matrix}
 $$
+{{< /math >}}
+
 其中$\boldsymbol{\alpha}=0.125, \\;\boldsymbol{\beta}=0.25$[^7]
 
 ### 超时重传机制[^8]
