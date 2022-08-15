@@ -2,7 +2,7 @@
 title: "TCP连接"
 subtitle: ""
 date: 2021-11-02T19:29:02+08:00
-lastmod: 2021-11-02T19:29:02+08:00
+lastmod: 2022-08-15T19:45:06+08:00
 draft: false
 description: ""
 tags:
@@ -10,7 +10,7 @@ tags:
 categories:
   - Protocol
 series:
-
+  - TCP
 hiddenFromHomePage: false
 hiddenFromSearch: false
 featuredImage: ""
@@ -120,6 +120,7 @@ C端在建立连接后将为本次连接分配资源。
 S端在收到该`ACK`包后进行状态切换：`SYN_RCVD`->`ESTABLISHED`
 
 当双方均处于`ESTABLISHED`状态时，连接建立完成，可以开始数据传输。
+此时`SND.NXT`为`ISS`+`1`，即第一个数据包的`SEG.SEQ`为`ISS`+`1`
 
 注意，TCP数据传输可能发生在建立连接时期，但TCP层必须在连接建立完成后才能将数据上传给应用层，
 在此之前需将数据缓存[^1]。

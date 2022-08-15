@@ -2,7 +2,7 @@
 title: "TCP可靠传输机制"
 subtitle: ""
 date: 2021-11-02T18:17:59+08:00
-lastmod: 2021-11-02T18:17:59+08:00
+lastmod: 2022-08-15T19:43:11+08:00
 draft: false
 description: ""
 tags:
@@ -69,7 +69,7 @@ TCP使用**序号**(Sequence Number)对发送的字节流进行编号，接收�
     - `SND.NXT`表示发送方下个数据包的序号，其相对值表示尚未发送的数据在数据流中的字节位置
     - `SND.UNA`表示尚未被确认的最小序号，其相对值表示尚未被确认的数据在数据流中的字节位置
 2. 接收方维护一个变量`RCV.NXT`并使用收到的第一个数据包的`SEG.SEQ`作为初始值(即`ISS`)
-3. TCP连接建立，详见[TCP连接]
+3. TCP连接建立完成后数据流的第一个字节的序号为`ISS`+`1`，详见[TCP连接]({{< ref "posts/Networking/TCP/TCP-Connection" >}})
 4. 发送方发送序号为`SND.NXT`，包含数据长度为`n`的报文，并将`SND.NXT`更新为`SND.NXT`+`n`
 5. 接受方收到序号为`RCV.NXT`的数据包并确认无误后将`RCV.NXT`更新为`RCV.NXT`+`n`
    并延时等待最多`500ms`[^3] (若已处于等待状态则结束等待并立即发送所有等待中的确认包)，
@@ -210,7 +210,7 @@ $$
 由于TCP使用流水线(Pipeline)的方式发送数据包，当定时器超时后通常已经发送了许多数据包，
 因此使用超时机制并不能及时的检测到丢包。针对这种情况，
 TCP使用一种**快速重传**(Fast Retransmit and Recovery, FRR)机制，
-即当发送方连续收到三个重复的确认包且`SEG.ACK`<`SND.UNA`时视为发生了丢包，
+即当发送方连续收到三个重复的确认包(不包括原始确认包)且`SEG.ACK`<`SND.UNA`时视为发生了丢包，
 随即重传序号为`SND.UNA`的数据包而无需等到定时器超时。此时需按照超时重传机制重置定时器。
 
 当发生单独的数据包丢失时，快速重传机制效率最高；
@@ -220,7 +220,7 @@ TCP使用一种**快速重传**(Fast Retransmit and Recovery, FRR)机制，
 
 TCP数据包的用于储存`SEG.SEQ`的空间长度只有32 bits，因此当发送的数据量足够大时(大于4GB)，
 网络中可能同时存在两个`SEG.SEQ`相同但携带不同数据的合法数据包，
-这种情况称为**序号复用**(Sequence number warp-around)
+这种情况称为**序号混迭**(Sequence number warp-around)
 
 为了解决这个问题，需要根据TCP的传输速率规定TCP数据包的**最大存活周期**(Maximum Segment Lifetime, MSL),
 也可以对储存序号的空间进行扩容(涉及到更改TCP首部字段, 实施困难)或使用`Option`字段扩大`SEG.SEQ`的数值空间
