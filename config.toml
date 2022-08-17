@@ -93,8 +93,8 @@ hasCJKLanguage = true
       title = "@AryanSjet"
     [params.social.Email]
       weight = 3
-      id = "Aryan.ITFS@icloud.com"
-      title = "Aryan.ITFS@icloud.com"
+      id = "Aryan.ITFS@Gmail.com"
+      title = "Aryan.ITFS@Gmail.com"
 
   [params.section]
     paginate = 20
