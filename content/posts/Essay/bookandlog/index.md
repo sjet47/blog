@@ -3,7 +3,7 @@ title: "Book & Log"
 subtitle: ""
 date: 2022-08-17T15:51:36+08:00
 lastmod: 2022-08-17T15:51:36+08:00
-draft: false
+draft: true
 description: ""
 tags:
   - Thoughts
