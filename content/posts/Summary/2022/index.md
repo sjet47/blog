@@ -14,8 +14,8 @@ series:
 
 hiddenFromHomePage: false
 hiddenFromSearch: false
-featuredImage: ""
-featuredImagePreview: ""
+featuredImage: "cover.jpg"
+featuredImagePreview: "cover.jpg"
 avatarURL : "favicon.svg"
 toc:
   enable: true
