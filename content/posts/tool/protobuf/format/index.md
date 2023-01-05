@@ -1,8 +1,8 @@
 ---
-title: "Protocol Buffers使用介绍"
+title: "Protocol Buffers系列：格式介绍(一)"
 subtitle: ""
 date: 2023-01-02T14:08:12+08:00
-lastmod: 2023-01-03T22:10:12+08:00
+lastmod: 2023-01-05T21:14:14+08:00
 draft: false
 description: ""
 tags:
@@ -10,6 +10,7 @@ tags:
 categories:
 
 series:
+  - protobuf
 
 hiddenFromHomePage: false
 hiddenFromSearch: false
@@ -36,6 +37,15 @@ Protocol Buffers数据格式在不同语言和平台间具有高度一致性，
 生成的代码也具有相似的功能，因此其通常作为分布式组件和微服务之间数据通信的序列化协议。
 
 <!--more-->
+
+---
+
+**这篇Blog是protobuf系列的第一篇，整个系列目录如下**
+
+- Protocol Buffers系列：格式介绍(一)
+- [Protocol Buffers系列：编码方式(二)]({{< ref "posts/tool/protobuf/encoding" >}})
+
+--
 
 <!-- Main Content -->
 
@@ -119,22 +129,22 @@ map<key_type, value_type> map_field = N;
 
 ### Numeric
 
-|type|.proto type 32bit|.proto type 64bit|note|
-|-|-|-|-|
-|有符号数|int32|int64|使用变长编码格式|
-|有符号数|sint32|sint64|使用变长编码格式，当编码负数时比对应的`int`类型更有效率|
-|有符号数|sfixed32|sfixed64|固定字节长度|
-|无符号数|uint32|uint64|使用变长编码格式|
-|无符号数|fixed32|fixed64|固定字节长度，当值较大时比对应的`uint`类型更有效率(32bit 2^28, 64bit 2^56)|
-|浮点数|float|double|IEEE 754标准浮点数|
+| type     | .proto type 32bit | .proto type 64bit | note                                                                       |
+| -------- | ----------------- | ----------------- | -------------------------------------------------------------------------- |
+| 有符号数 | int32             | int64             | 使用变长编码格式                                                           |
+| 有符号数 | sint32            | sint64            | 使用变长编码格式，当编码负数时比对应的`int`类型更有效率                    |
+| 有符号数 | sfixed32          | sfixed64          | 固定字节长度                                                               |
+| 无符号数 | uint32            | uint64            | 使用变长编码格式                                                           |
+| 无符号数 | fixed32           | fixed64           | 固定字节长度，当值较大时比对应的`uint`类型更有效率(32bit 2^28, 64bit 2^56) |
+| 浮点数   | float             | double            | IEEE 754标准浮点数                                                         |
 
 ### Others
 
-|.proto type|note|
-|-|-|
-|bool||
-|string|长度小于2^32的合法UTF-8字符串(7-bit ASCII和其对应的UTF-8编码相同，所以也是合法的)|
-|bytes|长度小于2^32的字节序列|
+| .proto type | note                                                                              |
+| ----------- | --------------------------------------------------------------------------------- |
+| bool        |                                                                                   |
+| string      | 长度小于2^32的合法UTF-8字符串(7-bit ASCII和其对应的UTF-8编码相同，所以也是合法的) |
+| bytes       | 长度小于2^32的字节序列                                                            |
 
 
 ### 默认值
@@ -185,10 +195,10 @@ Field number用于在反序列化时识别不同的field，为了保证兼容性
 
 不同范围的field number会被编码成不同长度的字节串，具体如下
 
-|range|byte size|
-|-|-|
-|1-15|1|
-|16-2047|2|
+| range   | byte size |
+| ------- | --------- |
+| 1-15    | 1         |
+| 16-2047 | 2         |
 
 因此应该将1-15保留给`required`以及会频繁出现的`optional`field
 (还要考虑到将来可能出现的符合这种条件的field)，
@@ -257,7 +267,7 @@ reserved CaseName;
 - `string`、`bytes`和`message`的`singular`类型与其对应的`repeated`类型是兼容的
   - primitive类型会取该`repeated`中的最后一个元素
   - `message`类型会将所有元素合并
-- 由于`repeated`标量数字类型使用`packed`序列化格式，无法从`repeated`类型中解析出正确的`singular`值
+- 由于`repeated`标量数字类型使用[packed]({{< ref "posts/tool/protobuf/encoding#packed-encoding" >}})序列化格式，无法从`repeated`类型中解析出正确的`singular`值
 - `optional`和`oneof`是二进制兼容的，但是在语言层面可能不兼容
 
 ## Service Type
