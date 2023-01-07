@@ -2,7 +2,7 @@
 title: "Protocol Buffers系列：格式介绍(一)"
 subtitle: ""
 date: 2023-01-02T14:08:12+08:00
-lastmod: 2023-01-05T21:14:14+08:00
+lastmod: 2023-01-07T23:32:16+08:00
 draft: false
 description: ""
 tags:
@@ -66,6 +66,67 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 protoc --proto-path=<IMPORT_PATH> --go_out=<DST_DIR> path/to/file.proto
 ```
 
+示例目录结构如下
+
+```plain
+.
+├── go.mod
+├── proto
+│   └── example.proto
+└── src
+    ├── cmd
+    │   └── main.go
+    └── model
+```
+
+其中`example.proto`的内容为
+
+```proto
+syntax = "proto3";
+example.
+
+执行命令
+
+```shell
+# 注意，由于没有导入其他.proto文件，所以这里省略了--proto-path参数
+protoc --go_out=src proto/example.proto
+```
+
+此时目录结构如下
+
+```plain
+.
+├── go.mod
+├── proto
+│   └── example.proto
+└── src
+    ├── cmd
+    │   └── main.go
+    └── model
+        └── example.pb.go
+```
+
+可以看到，`./src/model`目录中新增了一个名为`example.pb.go`的文件，该文件内容大致如下
+
+```go
+package model
+
+// ...
+
+type Hello struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id   uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+// ...
+```
+
+这时在代码中就可以通过`model.Hello`访问这个结构体
+
 其他语言可以用以下参数来生成对应的代码
 
 - `--cpp_out=<DST_DIR>` generates C++ code in DST_DIR.
@@ -77,6 +138,8 @@ protoc --proto-path=<IMPORT_PATH> --go_out=<DST_DIR> path/to/file.proto
 - `--csharp_out=<DST_DIR>` generates C# code in DST_DIR.
 - `--php_out=<DST_DIR>` generates PHP code in DST_DIR.
 
+
+
 ## `.proto` 文件格式
 
 ```proto
@@ -84,26 +147,28 @@ syntax = <proto.version>;
 
 import *public "other_proto_file_path"; // 可以导入其他.proto文件来使用其中的定义
 
-package PackageName; // 定义该.proto文件的命名空间
+**package PackageName; // 定义该.proto文件的命名空间
 
-[file option];
+**option FileOption;
 
 message MessageName {
-  // 将某个FieldName或FieldNumber设为保留值，这两种保留值需写在不同的reserved语句中，可省略
-  reserved ...;
+  // 将某个FieldName或FieldNumber设为保留值，这两种类型的保留值需写在不同的reserved语句中
+  **reserved FieldName...;
+  **reserved FieldNumber...;
 
-  // scalar类型，默认为singular
-  [optional] singular|repeated FieldType FieldName = FieldNumber;
+  // 默认为singular, optional通常用于指针类型
+  *optional *repeated FieldType FieldName = FieldNumber;
 
   // map类型
-  [optional] <KeyType, ValueType> FieldName = FieldNumber;
+  *optional <KeyType, ValueType> FieldName = FieldNumber;
 }
 
 enum EnumName {
-  option allow_alias = true|false; // 允许不同的case具有相同的enum number
+  **option allow_alias = true; // 允许不同的case具有相同的enum number
   CaseName = EnumNumber;
 }
 
+// 只能定义在message内部
 oneof OneofName {
   // 不能出现repeated和map类型的field
   FieldType FieldName = FieldNumber;
@@ -172,15 +237,15 @@ Example
 message Person {
   string name = 1;
   int32 id = 2;
-  repeat string email = 3;
-  optional string addr = 4;
+  repeated string email = 3;
+  optional Organization org = 4;
 }
 ```
 
 #### Field Number
 
-Field number用于在反序列化时识别不同的field，为了保证兼容性，
-在更新`.proto`文件时不要修改已有field的field number，
+Field number用于在反序列化时识别不同的field，从1开始。
+为了保证兼容性，在更新`.proto`文件时不要修改已有field的field number，
 而是以增量更新的方式为新创建或更新的field分配一个新的field number。
 
 当需要删除某个field时，需要将其对应的field number或field name声明在`reserved`语句中，
@@ -193,16 +258,8 @@ Field number用于在反序列化时识别不同的field，为了保证兼容性
 可以通过`FieldDescriptor::kFirstReservedNumber`和`FieldDescriptor::kLastReservedNumber`
 获取这两个上下限。声明为`reserved`的field number也不能使用
 
-不同范围的field number会被编码成不同长度的字节串，具体如下
-
-| range   | byte size |
-| ------- | --------- |
-| 1-15    | 1         |
-| 16-2047 | 2         |
-
-因此应该将1-15保留给`required`以及会频繁出现的`optional`field
-(还要考虑到将来可能出现的符合这种条件的field)，
-16-2047保留给不经常出现的`optional`field
+不同范围的field number会被编码成不同长度的字节串，其中1-15范围内的field number只占用1字节，
+因此应该将1-15分配给最有可能不是默认值的field,并且还要考虑到将来可能出现的符合这种条件的field
 
 #### Field Type
 
@@ -210,7 +267,7 @@ Field number用于在反序列化时识别不同的field，为了保证兼容性
 
 - `singular` 非数组类型，该类型为默认类型，无需显式声明
 - `repeated` 有序数组类型，长度可以为0
-- `optional` 只有该field被设置时(非默认值)才会被序列化
+- `optional` 通常用于指针类型
 - `map`
 
 ### `enum`类型
@@ -234,6 +291,9 @@ reserved CaseName;
 
 ### `oneof`类型
 
+`oneof`严格来说并不算是一种类型，因为它只能定义在`message`内部，
+并且会占用该`message`的field number，它只能用来说明这个`message`中的某几个field只会出现其中一个
+
 - 如果重复设置某个`oneof`类型的值，只会保留最后一次设置的值
 - 反序列化时如果某个`oneof`有多个类型的值，则只取最后一个
 - `oneof`本身不能是`repeated`
@@ -256,7 +316,7 @@ reserved CaseName;
 
 ## 类型兼容性
 
-类型之间兼容意味着可以把某个field的类型从一个类型更改为另一个类型而不破坏代码
+类型之间兼容意味着一个类型的编码结果可以正确的解码出另一个类型的值
 
 - 这些集合内部是相互兼容的:
   - `varint = {int32, uint32, int64, uint64}`
