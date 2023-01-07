@@ -84,7 +84,7 @@ syntax = <proto.version>;
 
 import *public "other_proto_file_path"; // 可以导入其他.proto文件来使用其中的定义
 
-package PackageName // 定义该.proto文件的命名空间
+package PackageName; // 定义该.proto文件的命名空间
 
 [file option];
 
