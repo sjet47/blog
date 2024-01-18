@@ -4,7 +4,6 @@ defaultContentLanguage = "en"
 # language code
 languageCode = "en"
 
-title = "AryanSjet's Blog"
 # Change the default theme to be use when building the site with Hugo
 theme = "DoIt"
 enableGitInfo = false
@@ -15,21 +14,24 @@ hasCJKLanguage = true
 
 [params]
   # DoIt theme version
-  version = "0.2.X"
-  description = "AryanSjet's Blog"
+  version = "0.3.X"
+  title = "Aryan Sjet's Blog"
+  description = "Aryan Sjet's Blog"
   keywords = ["AryanSjet", "ASjet", "Blog"]
   defaultTheme = "dark"
-  dateFormat = "2006/01/02"
+  gitRepo = "https://github.com/ASjet/blog"
+  dateFormat = "2006-01-02"
   images = ["/images/avatar.png"]
   enablePWA = true
   favicon = "/images/ica.png"
+  license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
 
   [params.app]
     title = "ASjet-Blog"
     noFavicon = false
     iconColor = "#767472"
     titleColor = "#767472"
-    svgFavicon = "favicon.svg"
+    svgFavicon = "/favicon.svg"
 
   [params.search]
     enable = true
@@ -56,7 +58,7 @@ hasCJKLanguage = true
     mobileMode = "auto"
     themeChangeMode = "switch"
     [params.header.title]
-      # logo = "favicon.png"
+      logo = "/favicon.png"
       name = "AryanSjet"
 
   [params.footer]
@@ -70,31 +72,21 @@ hasCJKLanguage = true
   [params.home]
     rss = 10
     [params.home.profile]
-    enable = true
-    social = true
-    avatarURL = "/images/avatar.png"
-    title = "AryanSjet's Blog"
-    subtitle = "Think different"
-    typeit = true
+	  enable = true
+	  social = true
+	  avatarURL = "/images/avatar.png"
+	  title = "AryanSjet's Blog"
+	  subtitle = "Think different"
+	  typeit = true
 
-  [params.home.posts]
-    enable = true
-    paginate = 10
+	[params.home.posts]
+	  enable = true
+	  paginate = 10
 
   [params.social]
-    social = true
-    # [params.social.GitHub]
-    #   weight = 1
-    #   id = "ASjet"
-    #   title = "github.com/ASjet"
-    [params.social.Twitter]
-      weight = 2
-      id = "AryanSjet"
-      title = "@AryanSjet"
-    [params.social.Email]
-      weight = 3
-      id = "Aryan.ITFS@Gmail.com"
-      title = "Aryan.ITFS@Gmail.com"
+	GitHub = "github.com/ASjet"
+	Twitter = "@AryanSjet"
+	Email = "sjet@asjet.dev"
 
   [params.section]
     paginate = 20
@@ -229,13 +221,12 @@ hasCJKLanguage = true
       typographer = true
     [markup.goldmark.renderer]
       # whether to use HTML tags directly in the document
-      # 是否在文档中直接使用 HTML 标签
       unsafe = true
 
 
 [author]
   name = "ASjet"
-  email = "Aryan.ITFS@icloud.com"
+  email = "sjet@asjet.dev"
   link = "https://github.com/ASjet"
   avatar = "/images/avatar.png"
 
