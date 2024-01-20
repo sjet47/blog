@@ -97,6 +97,9 @@ text format是一种类似[JSON](https://www.json.org/json-en.html)的表示方�
 但是解码一个负数并不需要知道该类型所能表示的最大范围，
 这样不是所有的负数都需要用到全部的10个字节，相比补码方式能节省更多的空间
 
+实际上，如果按照`2 * n + 1`来计算负数，会发现`0`和`1`都表示0，
+所以Protobuf将负数往前移了一位，即使用`2 * n - 1`来计算负数(n > 0)
+
 ### 其他数字类型
 
 Field type为`bool`和`enum`的value都按照`int32`类型来编码，
@@ -152,7 +155,6 @@ Protobuf message中的每个field都可以看作是一个key-value pair，
 每个field的名称和类型只在解码的时候才会决定，wire format本身不包含名称和类型信息。
 
 在编码消息时，这样的一个key-value pair称为一个`record`，其具体表现形式就是上面提到的TLV结构。
-当使用`optional`修饰的field的值为默认值时，该field不会被序列化，即编码结果中不包含该field的`record`
 
 在一个`record`中field number和wire type会编码在同一个`varint`中，
 这个`varint`称为这个`record`的`tag`，并且该`varint`的lower 3-bit就是wire type，
