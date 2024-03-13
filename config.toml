@@ -138,12 +138,21 @@ hasCJKLanguage = true
     Twitter = true
   [params.page.comment]
     enable = true
-    [params.page.comment.gitalk]
-      enable = true
-      owner = "ASjet"
-      repo = "blog"
-      clientId = "cf92fc7c8b742962bc82"
-      clientSecret = "1e3071387b30ad28a356675033159c9986cf453d"
+	  [params.page.comment.giscus]
+        enable = true
+        # owner/repo
+        dataRepo = "ASjet/blog"
+        dataRepoId = "MDEwOlJlcG9zaXRvcnkzNjQyMjkyMDU="
+        dataCategory = "General"
+        dataCategoryId = "DIC_kwDOFbWyVc4Cd8QA"
+        dataMapping = "pathname"
+        dataReactionsEnabled = "1"
+        dataEmitMetadata = "0"
+        dataInputPosition = "top"
+        lightTheme = "light"
+        darkTheme = "dark"
+        dataLang = "en"
+        dataLoading = "lazy"
 
   [params.typeit]
     # ms per character
