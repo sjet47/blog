@@ -27,13 +27,12 @@ license: "CC BY-NC-ND"
 ---
 <!-- Summary -->
 
+So how does *syscall* happens, actually? If you look up the definition of the `write`, you will see the following function signature:
+
+
 <!--more-->
 
 <!-- Main Content -->
-
-## Userspace Code
-
-So how does *syscall* happens, actually? If you look up the definition of the `write`, you will see the following function signature:
 
 ```c
 /* Write N bytes of BUF to FD.  Return the number written, or -1.
@@ -45,6 +44,9 @@ extern ssize_t write (int __fd, const void *__buf, size_t __n) __wur
 ```
 
 But we still don't know exactly what happens when we call it. All we know is that it's like a normal C function: we call it, and everything gets done.
+
+## Userspace Code
+
 
 Since the source code of `libc` is open to everyone, we can look up how `write` is implemented. But before doing that, let's use `gdb` to find out what actually happens.
 
