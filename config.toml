@@ -1,4 +1,4 @@
-baseURL = "https://aryansjet.top"
+baseURL = "https://asjet.dev"
 # [en, zh-cn, fr, ...] determines default content language
 defaultContentLanguage = "en"
 # language code
@@ -13,55 +13,63 @@ favicon = "/images/ica.png"
 hasCJKLanguage = true
 
 [params]
-  # DoIt theme version
-  version = "0.3.X"
-  title = "Aryan Sjet's Blog"
-  description = "Aryan Sjet's Blog"
-  keywords = ["AryanSjet", "ASjet", "Blog"]
-  defaultTheme = "dark"
-  gitRepo = "https://github.com/ASjet/blog"
-  dateFormat = "2006-01-02"
-  images = ["/images/avatar.png"]
-  enablePWA = true
-  favicon = "/images/ica.png"
-  license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
+    # DoIt theme version
+    version = "0.3.X"
+    title = "Aryan Sjet's Blog"
+    description = "Aryan Sjet's Blog"
+    keywords = [
+        "Aryan Sjet",
+        "Aryan",
+        "Sjet",
+        "ASjet",
+        "Blog",
+    ]
+    defaultTheme = "light"
+    gitRepo = "https://github.com/ASjet/blog"
+    dateFormat = "2006-01-02"
+    images = [
+        "/images/avatar.png",
+    ]
+    enablePWA = true
+    favicon = "/images/ica.png"
+    license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
 
-  [params.app]
-    title = "ASjet-Blog"
-    noFavicon = false
-    iconColor = "#767472"
-    titleColor = "#767472"
-    svgFavicon = "/favicon.svg"
+    [params.app]
+        title = "ASjet-Blog"
+        noFavicon = false
+        iconColor = "#767472"
+        titleColor = "#767472"
+        svgFavicon = "/favicon.svg"
 
-  [params.search]
-    enable = true
-    type = "fuse"
-    contentLength = 4000
-    placeholder = "Search"
-    maxResultLength = 20
-    snippetLength = 50
-    highlightTag = "em"
-    absoluteURL = false
-    [params.search.fuse]
-      isCaseSensitive = false
-      minMatchCharLength = 2
-      findAllMatches = false
-      location = 0
-      threshold = 0.1
-      distance = 100
-      ignoreLocation = true
-      useExtendedSearch = true
-      ignoreFieldNorm = false
+    [params.search]
+        enable = true
+        type = "fuse"
+        contentLength = 4000
+        placeholder = "Search"
+        maxResultLength = 20
+        snippetLength = 50
+        highlightTag = "em"
+        absoluteURL = false
+        [params.search.fuse]
+            isCaseSensitive = false
+            minMatchCharLength = 2
+            findAllMatches = false
+            location = 0
+            threshold = 0.1
+            distance = 100
+            ignoreLocation = true
+            useExtendedSearch = true
+            ignoreFieldNorm = false
 
-  [params.header]
+[params.header]
     desktopMode = "fixed"
     mobileMode = "auto"
     themeChangeMode = "switch"
     [params.header.title]
-      logo = "/favicon.png"
-      name = "AryanSjet"
+        logo = "/favicon.png"
+        name = "AryanSjet"
 
-  [params.footer]
+[params.footer]
     enable = true
     hugo = true
     copyright = true
@@ -69,41 +77,42 @@ hasCJKLanguage = true
     since = 2020
     license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
 
-  [params.home]
+[params.home]
     rss = 10
     [params.home.profile]
-	  enable = true
-	  social = true
-	  avatarURL = "/images/avatar.png"
-	  title = "AryanSjet's Blog"
-	  subtitle = "Think different"
-	  typeit = true
+        enable = true
+        social = true
+        avatarURL = "/images/avatar.png"
+        title = "Aryan Sjet"
+        subtitle = "Think different."
+        typeit = true
 
-	[params.home.posts]
-	  enable = true
-	  paginate = 10
+    [params.home.posts]
+        enable = false
+        paginate = 10
 
-  [params.social]
-	GitHub = "github.com/ASjet"
-	Twitter = "@AryanSjet"
-	Email = "sjet@asjet.dev"
+[params.social]
+    LinkedIn = "linhao-sun"
+    GitHub = "github.com/ASjet"
+    Twitter = "@AryanSjet"
+    Email = "contact@asjet.dev"
 
-  [params.section]
+[params.section]
     paginate = 20
     dateFormat = "01/02"
     rss = 10
     [params.section.recentlyUpdate]
-      enable = true
-      rss = true
-      days = 30
-      maxCount = 10
+        enable = true
+        rss = true
+        days = 30
+        maxCount = 10
 
-  [params.list]
+[params.list]
     paginate = 20
     dateFormat = "01/02"
     rss = 10
 
-  [params.page]
+[params.page]
     hiddenFromHomePage = false
     hiddenFromSearch = false
     twemoji = false
@@ -114,47 +123,47 @@ hasCJKLanguage = true
     linkToMarkdown = true
     rssFullText = true
     pageStyle = "wide"
-  [params.page.outdatedArticleReminder]
-    enable = true
-    reminder = 360
-    warning = 720
-  [params.page.toc]
-    enable = true
-    keepStatic = false
-    auto = true
-  [params.page.code]
-    copy = true
-    maxShownLines = 24
-  [params.page.math]
-    enable = true
-    blockLeftDelimiter = "$$"
-    blockRightDelimiter = "$$"
-    inlineLeftDelimiter = "$"
-    inlineRightDelimiter = "$"
-    copyTex = true
-    mhchem = true
-  [params.page.share]
-    enable = true
-    Twitter = true
-  [params.page.comment]
-    enable = true
-	  [params.page.comment.giscus]
+    [params.page.outdatedArticleReminder]
         enable = true
-        # owner/repo
-        dataRepo = "ASjet/blog"
-        dataRepoId = "MDEwOlJlcG9zaXRvcnkzNjQyMjkyMDU="
-        dataCategory = "General"
-        dataCategoryId = "DIC_kwDOFbWyVc4Cd8QA"
-        dataMapping = "pathname"
-        dataReactionsEnabled = "1"
-        dataEmitMetadata = "0"
-        dataInputPosition = "top"
-        lightTheme = "light"
-        darkTheme = "dark"
-        dataLang = "en"
-        dataLoading = "lazy"
+        reminder = 360
+        warning = 720
+    [params.page.toc]
+        enable = true
+        keepStatic = false
+        auto = true
+    [params.page.code]
+        copy = true
+        maxShownLines = 24
+    [params.page.math]
+        enable = true
+        blockLeftDelimiter = "$$"
+        blockRightDelimiter = "$$"
+        inlineLeftDelimiter = "$"
+        inlineRightDelimiter = "$"
+        copyTex = true
+        mhchem = true
+    [params.page.share]
+        enable = true
+        Twitter = true
+    [params.page.comment]
+        enable = true
+        [params.page.comment.giscus]
+            enable = true
+            # owner/repo
+            dataRepo = "ASjet/blog"
+            dataRepoId = "MDEwOlJlcG9zaXRvcnkzNjQyMjkyMDU="
+            dataCategory = "General"
+            dataCategoryId = "DIC_kwDOFbWyVc4Cd8QA"
+            dataMapping = "pathname"
+            dataReactionsEnabled = "1"
+            dataEmitMetadata = "0"
+            dataInputPosition = "top"
+            lightTheme = "light"
+            darkTheme = "dark"
+            dataLang = "en"
+            dataLoading = "lazy"
 
-  [params.typeit]
+[params.typeit]
     # ms per character
     speed = 100
     # blinking speed of cursor(ms)
@@ -164,110 +173,132 @@ hasCJKLanguage = true
 
 
 [menu]
-  [[menu.main]]
-    identifier = "posts"
-    # you can add extra information before the name (HTML format is supported), such as icons
-    pre = ""
-    # you can add extra information after the name (HTML format is supported), such as icons
-    post = ""
-    name = "Posts"
-    url = "/posts/"
-    # title will be shown when you hover on this menu link
-    title = ""
-    weight = 1
-  [[menu.main]]
-    identifier = "tags"
-    pre = ""
-    post = ""
-    name = "Tags"
-    url = "/tags/"
-    title = ""
-    weight = 2
-  [[menu.main]]
-    identifier = "categories"
-    pre = ""
-    post = ""
-    name = "Categories"
-    url = "/categories/"
-    title = ""
-    weight = 3
-  [[menu.main]]
-    identifier = "series"
-    pre = ""
-    post = ""
-    name = "Series"
-    url = "/series/"
-    title = ""
-    weight = 4
-  [[menu.main]]
-    identifier = "github"
-    pre = "<i class='fab fa-github fa-fw'></i>"
-    post = ""
-    name = "Github/ASjet"
-    url = "https://github.com/ASjet"
-    title = "GitHub"
-    weight = 5
+    [[menu.main]]
+        identifier = "about"
+        pre = ""
+        post = ""
+        name = "About"
+        url = "/about/"
+        title = ""
+        weight = 1
+    [[menu.main]]
+        identifier = "posts"
+        # you can add extra information before the name (HTML format is supported), such as icons
+        pre = ""
+        # you can add extra information after the name (HTML format is supported), such as icons
+        post = ""
+        name = "Posts"
+        url = "/posts/"
+        # title will be shown when you hover on this menu link
+        title = ""
+        weight = 2
+    [[menu.main]]
+        identifier = "tags"
+        pre = ""
+        post = ""
+        name = "Tags"
+        url = "/tags/"
+        title = ""
+        weight = 3
+    [[menu.main]]
+        identifier = "categories"
+        pre = ""
+        post = ""
+        name = "Categories"
+        url = "/categories/"
+        title = ""
+        weight = 4
+    [[menu.main]]
+        identifier = "series"
+        pre = ""
+        post = ""
+        name = "Series"
+        url = "/series/"
+        title = ""
+        weight = 5
+    [[menu.main]]
+        identifier = "github"
+        pre = "<i class='fab fa-github fa-fw'></i>"
+        post = ""
+        name = "Github/ASjet"
+        url = "https://github.com/ASjet"
+        title = "GitHub"
+        weight = 6
 
 # Markup related configuration in Hugo
 [markup]
-  # Syntax Highlighting (https://gohugo.io/content-management/syntax-highlighting)
-  [markup.highlight]
-    codeFences = true
-    guessSyntax = true
-    lineNos = true
-    lineNumbersInTable = true
-    # false is a necessary configuration (https://github.com/dillonzq/LoveIt/issues/158)
-    noClasses = false
+    # Syntax Highlighting (https://gohugo.io/content-management/syntax-highlighting)
+    [markup.highlight]
+        codeFences = true
+        guessSyntax = true
+        lineNos = true
+        lineNumbersInTable = true
+        # false is a necessary configuration (https://github.com/dillonzq/LoveIt/issues/158)
+        noClasses = false
 
-  [markup.goldmark]
-    [markup.goldmark.extensions]
-      definitionList = true
-      footnote = true
-      linkify = true
-      strikethrough = true
-      table = true
-      taskList = true
-      typographer = true
-    [markup.goldmark.renderer]
-      # whether to use HTML tags directly in the document
-      unsafe = true
+    [markup.goldmark]
+        [markup.goldmark.extensions]
+            definitionList = true
+            footnote = true
+            linkify = true
+            strikethrough = true
+            table = true
+            taskList = true
+            typographer = true
+        [markup.goldmark.renderer]
+            # whether to use HTML tags directly in the document
+            unsafe = true
 
 
 [author]
-  name = "ASjet"
-  email = "sjet@asjet.dev"
-  link = "https://github.com/ASjet"
-  avatar = "/images/avatar.png"
+    name = "ASjet"
+    email = "sjet@asjet.dev"
+    link = "https://github.com/ASjet"
+    avatar = "/images/avatar.png"
 
 
 [Permalinks]
-  posts = ":year/:month/:filename"
-  # posts = ":filename"
+    posts = ":year/:month/:filename"
+    # posts = ":filename"
 
 
 [privacy]
-  [privacy.twitter]
-    enableDNT = true
+    [privacy.twitter]
+        enableDNT = true
 
-  [privacy.youtube]
-    privacyEnhanced = true
+    [privacy.youtube]
+        privacyEnhanced = true
 
 
 [outputFormats.MarkDown]
-  mediaType = "text/plain"
-  isPlainText = true
-  isHTML = false
+    mediaType = "text/plain"
+    isPlainText = true
+    isHTML = false
 
 
 [outputs]
-  home = ["HTML", "RSS", "JSON"]
-  page = ["HTML"]
-  section = ["HTML", "RSS"]
-  taxonomy = ["HTML", "RSS"]
-  taxonomyTerm = ["HTML"]
+    home = [
+        "HTML",
+        "RSS",
+        "JSON",
+    ]
+    page = [
+        "HTML",
+    ]
+    section = [
+        "HTML",
+        "RSS",
+    ]
+    taxonomy = [
+        "HTML",
+        "RSS",
+    ]
+    taxonomyTerm = [
+        "HTML",
+    ]
 
 
 [taxonomies]
-  category = "categories"
-  tag = "tags"
-  series = "series"
+    category = "categories"
+    tag = "tags"
+    series = "series"
