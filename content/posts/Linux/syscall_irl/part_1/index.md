@@ -270,8 +270,7 @@ rdi rsi rdx rcx r8-9 | rbx rbp [*] r12-15 | r10-11             | rax, rdx [**]
 Normally, the `callee-saved` means the caller can assume that the value of the register is not changed after the call, so the function itself should save the origin value of the register before using it for other purposes. And the `callee-clobbered` means the caller can not assume that so it need to manually save it before the call if it want to use it after the call.
 
 Now we have a necessary understanding of calling convention, let's go deeper and see how syscall is implemented.
-
-TODO: syscall_irl - Part II: Dive into the kernel
+[syscall_irl - Part II: Userspace Stub]({{< ref "posts/Linux/syscall_irl/part_2" >}})
 
 [^1]: https://github.com/golang/sys/blob/master/unix/README.md
 [^2]: https://en.wikipedia.org/wiki/Sentinel_species#Toxic_gases
