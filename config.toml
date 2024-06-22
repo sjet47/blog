@@ -119,7 +119,6 @@ hasCJKLanguage = true
     lightgallery = false
     ruby = true
     fraction = true
-    fontawesome = true
     linkToMarkdown = true
     rssFullText = true
     pageStyle = "wide"
