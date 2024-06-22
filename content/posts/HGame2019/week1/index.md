@@ -7,8 +7,9 @@ draft: false
 description: 2020 VidarTeam Hgame Writeup
 tags:
     - Writeup
+    - CTF
 series:
-    - HGame
+    - HGame-2020
 hiddenFromHomePage: false
 hiddenFromSearch: false
 avatarURL : "favicon.svg"
