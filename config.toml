@@ -9,13 +9,13 @@ theme = "DoIt"
 enableGitInfo = false
 enableEmoji = true
 favicon = "/images/ica.png"
+title = "Aryan Sjet's Blog"
 
 hasCJKLanguage = true
 
 [params]
     # DoIt theme version
     version = "0.3.X"
-    title = "Aryan Sjet's Blog"
     description = "Aryan Sjet's Blog"
     keywords = [
         "Aryan Sjet",
