@@ -292,9 +292,6 @@ hasCJKLanguage = true
         "HTML",
         "RSS",
     ]
-    taxonomyTerm = [
-        "HTML",
-    ]
 
 
 [taxonomies]
