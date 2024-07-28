@@ -129,7 +129,7 @@ hasCJKLanguage = true
     [params.page.toc]
         enable = true
         keepStatic = false
-        auto = true
+        auto = false
     [params.page.code]
         copy = true
         maxShownLines = 24
