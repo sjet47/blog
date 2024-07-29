@@ -26,9 +26,9 @@ license: "CC BY-NC-ND"
 ---
 <!-- Summary -->
 
-In the Linux world, **syscall** in most case is the only way for userspace programs to interact with kernel, and utilize the full power that the Linux kernel offers.
+In the Linux world, **syscall** is typically the primary mechanism for userspace programs to interact with the kernel and leverage the full capabilities of the Linux kernel.
 
-In this blog, we will take a deep dive into Linux system call, not theoretically, but practically. We will start from the very beginning, and gradually build up a full picture of Linux system call.
+In this blog post, we will explore Linux system calls in-depth, not just theoretically but also through practical examples. We will start from the fundamentals and gradually build a comprehensive understanding of Linux system calls.
 
 <!--more-->
 
@@ -36,7 +36,7 @@ In this blog, we will take a deep dive into Linux system call, not theoretically
 
 ## Intro
 
-It's easy to do a syscall in C code, like the following:
+It's straightforward to make a system call in C, as demonstrated by this simple example of the `write` system call:
 
 ```c
 // write.c
@@ -52,19 +52,21 @@ Hello, World!
 */
 ```
 
-This simple example does only one thing: print `"Hello World!"` to file descriptor `1`, which stands for `stdout`. But what if I want to do the same thing in other language?
+This simple example does only one thing: to print `"Hello World!"` to `stdout`(file descriptor `1`). But what if I want to do the same thing in other programming language?
 
-Most languages simply reused the same library that C uses, which is called `libc`. There are many implementations of `libc`, but the most popular one is [GNU C Library](https://www.gnu.org/software/libc/), or `glibc` for short. `glibc` is the default `libc` implementation for most Linux distributions, there are also other implementations like [musl](https://musl.libc.org/) that provides different features.
+Most languages simply reuse the same standard library that C uses, which is called the C standard library or `libc`. While there are several implementations of `libc`, the most popular one is the [GNU C Library](https://www.gnu.org/software/libc/), commonly known as `glibc`. Glibc is the default `libc` implementation for most Linux distributions. But there are also other `libc` implementations, such as [musl](https://musl.libc.org/), which provide different features and capabilities. `musl` is commonly used for creating portable applications that doesn't rely on the version of `glibc` that comes with the distribution.
 
-You may also heard that Go can do syscall without `libc`[^1] because it has its own runtime that can do syscall directly, so Go program could be built *totally static* and can run without any dependency. That makes Go program very portable, especially suitable for ops-tools that need to run on different environments.
+You may have also heard that Go can perform system calls without reply on `libc`[^1], that is because it has its own runtime that can directly interact with the system call interface. This allows Go programs to be built as fully static binaries, which can run without any external dependencies. This feature makes Go programs highly portable, especially suitable for running in containerized environments.
 
-So it seems that syscall can be language-agnostic, and there must be some common protocols that all languages can follow, that is, the [**ABI**](https://en.wikipedia.org/wiki/Application_binary_interface).
+### Application Binary Interface
 
-In the context of syscall, the most significant part of ABI is [**Calling Convention**](https://en.wikipedia.org/wiki/Calling_convention), which basically defines what to do when you want to do a procedure call in the binary level.
+It seems that system calls can be language-agnostic, and there must be some common protocols that all languages can follow. This common interface is known as the [Application Binary Interface (ABI)](https://en.wikipedia.org/wiki/Application_binary_interface).
 
-With following the calling convention, we can not only do syscall in different languages, and can also call procedures written in another language. The latter case is even more often because most languages do syscall by calling a C syscall wrapper defined in `libc`.
+In the context of system calls, the most significant part of ABI is the [**Calling Convention**](https://en.wikipedia.org/wiki/Calling_convention), which essentially defines the low-level rules for how a procedure call is performed in the binary code.
 
-Before we dive into the details of syscall, let's take a look at some normal procedure calls first and see what calling convention looks like.
+Since Linux is primarily written in C, the system call interface is designed to be compatible with the C calling convention, which is also the most common calling convention used globally. By adhering to the C calling convention, developers can not only perform system calls in different programming languages, they can also call procedures written in another language, because most languages use C calling convention for their [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface) feature. The latter case is even more common, as most languages won't interact with the system call interface directly in binary level, but by calling a C-based system call wrapper defined in the `libc`. We can say that the C calling convention is the lingua franca of the programming world.
+
+Before delving into the details of system calls, let's first take a look at some normal procedure calls and examine what the calling convention entails.
 
 ### Example: `sum3`
 
@@ -79,7 +81,7 @@ int main(void) {
 }
 ```
 
-The `main` function in this simple C program calls a function `sum3` to calculate the sum of three integers, and save the result to variable `sum`. Let's compile and disassemble it to see what assembly code it generates:
+The `main` function in this simple C program calls a function `sum3` to calculate the sum of three integers, and saves the result to the variable `sum`. Let's compile and disassemble the program to examine the generated assembly code:
 
 ```asm
 # gcc -O0 -o sum3 sum3.c && objdump -d --no-show-raw-insn sum3
@@ -113,13 +115,13 @@ The `main` function in this simple C program calls a function `sum3` to calculat
 # ...
 ```
 
-As we can see, in the `main` function, first the parameters `(1,2,3)` are placed in registers `%edi`, `%esi`, `%edx` respectively, then does the `call` instruction with `1119`, the address of `sum3`, as operand, and finally the return value is placed in register `%eax`.
+As we can see, in the `main` function, the parameters `(1, 2, 3)` are first placed in the registers `%edi`, `%esi`, and `%edx` respectively. Then, the `call` instruction is executed, with the address `1119` (the address of the `sum3` function) as the operand. Finally, the return value is placed in the `%eax` register.
 
-So let's conclude: **first, place parameters in registers in a proper order, then execute the `call` instruction with the address of the function you want to call as operand. After the function returns, you can get the return value from register `%eax`.**
+To summarize: First, the parameters are placed in the appropriate registers in a specific order, then the call instruction is executed with the address of the function to be called as the operand. After the function returns, the return value can be retrieved from the `%eax` register.
 
 ### Example: `bigret`
 
-But here comes a question: since all parameters and return value are placed in registers in this example, and registers are typically only 64-bit in size, what if we want to pass a parameter or return a value that is larger than 64-bit, like a `struct`? Let's find out with some experiments:
+But here arises an important question: since all parameters and the return value are placed in registers in this example, and registers are typically only 64-bit in size, what if we want to pass a parameter or return a value that is larger than 64-bit, like a `struct`? Let's conduct some experiments to find out.
 
 ```c
 // bigret.c
@@ -187,19 +189,19 @@ Again, compile and disassemble:
 # ...
 ```
 
-Hmm...interesting, it looks like an address is passed as the first parameter to `ret_big` implicitly, and the return value is the same address. Let's see what's going on step by step:
+Hmm, that's quite interesting. It appears that an address is implicitly passed as the first parameter to the `ret_big` function, and the return value is also at the same address. Let's examine this step-by-step:
 
-In `main`:
+In the `main` function:
 
-1. `117a: sub $0x20,%rsp`: we all know that the stack grows from higher address to lower address, so subtract the stack pointer `$rsp`(register stack pointer) by `0x20(32)` actually allocate `32` bytes on stack, which in address range from `%rbp-0x20` to `%rbp`. We can see it as an `u64[4]` array.
-2. `117e: mov %fs:0x28,%rax`: read a value from address `%fs+0x28` to `%rax`.
-3. `1187: mov %rax,-0x8(%rbp)`: save the read value on stack at address `(%rbp-0x8)`, or `arr[3]`.
-4. `118b: xor %eax,%eax`: set `%eax` to `0`.
-5. `118d: lea -0x20(%rbp),%rax`: load the address of `%rbp-0x20` to `%rax`, which is `&arr[0]`.
-6. `1191` - `11a0`: place parameters in registers in order with shifting by one position, since `$eax` is the first parameter now.
+1. `117a: sub $0x20,%rsp`: allocate `32` bytes on the stack by subtracting `0x20(32)` from the stack pointer register `%rsp`. This can be viewed as declare an `uint64_t[4]` array on stack.
+2. `117e: mov %fs:0x28,%rax`: read a value from address `%fs+0x28` and store it in the register `%rax`.
+3. `1187: mov %rax,-0x8(%rbp)`: save the read value on the stack at the address `(%rbp-0x8)`, which corresponds to `arr[3]`.
+4. `118b: xor %eax,%eax`: clear register `%eax` to `0`.
+5. `118d: lea -0x20(%rbp),%rax`: load the address of `%rbp-0x20`(`&arr[0]`) to `%rax`.
+6. `1191` - `11a0`: place the parameters in the registers in the correct order, with a shift by one position, since `$eax` is now the first parameter.
 7. `113a call 1139 <ret_big>`: call `ret_big`.
 
-The code in `ret_big` is a little verbose, but if we recompile it with flag `-O1`, it instantly become much simpler:
+The code in the `ret_big` function appears a bit verbose, but if we recompile it with the `-O1` optimization flag, it becomes much simpler:
 
 ```asm
 0000000000001119 <ret_big>:
@@ -210,30 +212,30 @@ The code in `ret_big` is a little verbose, but if we recompile it with flag `-O1
     1127:	ret
 ```
 
-Since the first parameter `$rdi` is the address of the array `arr` that we allocated before, and the three parameters we passed to `ret_big` are placed in registers `$rsi`, `$rdx`, `$rcx` respectively, this code simply copy the three parameters to the array `arr` in order:
+Since the first parameter `$rdi` is the address of the array `arr` that we allocated earlier, and the three parameters we passed to `ret_big` are placed in the registers `$rsi`, `$rdx`, and `$rcx` respectively, this optimized code simply copies the three parameters to the array `arr` in order:
 
 1. `111c: mov %rsi,(%rdi)`: `arr[0] = %rdi`.
 2. `111f: mov %rdi,0x8(%rdi)`: `arr[1] = %rsi`.
 3. `1123: mov %rcx,0x10(%rdi)`: `arr[2] = %rdx`.
 4. `1127: ret`: return `arr`
 
-Now it's clear, **if we want to return a large chunk of data which can not fit in a register, we pass an address for the return value and let the function save it at that address.**
+Now it's clear. If we want to return a large data structure that cannot fit into a single register, we can pass the address of a buffer as the return value parameter and let the function save the data at that address.
 
-Since we just pass an address, it might happen that the function write more data than we expected, which will cause [**buffer overflow**](https://en.wikipedia.org/wiki/Buffer_overflow) that may results in a segment error or worse, an [**ACE**](https://en.wikipedia.org/wiki/Arbitrary_code_execution). So how can we prevent this from happening?
+However, this approach introduces a potential risk of [**buffer overflow**](https://en.wikipedia.org/wiki/Buffer_overflow), as the function might write more data than the allocated buffer can accommodate. This could result in a segment fault error, or even worse, an [Arbitrary Code Execution](https://en.wikipedia.org/wiki/Arbitrary_code_execution) vulnerability. So, how can we prevent this from happening?
 
-### Canary: The Guardian of Stack
+### Canary: The Guardian of the stack
 
-You might notice that the fourth instruction in `main`(step 3) put a secret value on stack at the location `arr[3]`, which is the last element of the array `arr` we allocated.
+You might notice that in the `main` function(step 3), the fourth instruction places a secret value on the stack at the location `arr[3]`, which is the last element of the array `arr` we allocated.
 
-Most buffer overflow attacks are based on the fact that the attacker can take an unbounded string as input, and if we use `\0` as the input delimiter, then the program will write the user input along the buffer and overwrite the memory that doesn't belong to the buffer, which may stores the return address.
+Most buffer overflow attacks exploit the fact that the attacker can provide an unbounded string as input, and if the program uses a null character (`\0`) as the input delimiter, it will write the user input along the buffer and overwrite the memory that does not belong to the buffer, which may contain the return address.
 
-After `ret_big` returns, the `main` instantly check if the secret value is changed, that is, instructions from `11ad` to `11ba`. If the secret value is not changed, it means the following memory contents are also not changed too, so the program thinks it's safe and will jump to instruction at `<main+0x4b>`, which is `11c1`, and returns normally. But if not, it will assume the memory after that value is altered, and will call `__stack_chk_fail` to terminate the program to prevent more damages from happening.
+After `ret_big` returns, the `main` function immediately checks if the secret value has been changed (instructions from `11ad` to `11ba`). If the secret value remains unchanged, it means the memory contents following it have also not been altered, so the program considers it safe and jumps to the instruction at `<main+0x4b>`(`11c1`), and returns normally. However, if the secret value has been changed, the program assumes the memory after that value has been altered too, and it will call the `__stack_chk_fail` function to terminate the program and prevent further damage.
 
-This secret value is called [**Canary**](https://en.wikipedia.org/wiki/Buffer_overflow_protection#Canaries), and it is a common technique to defend buffer overflow attacks. This terminology itself is a reference to the historic practice of using canaries in coal mines to warn miners toxic gases, which is another somber story[^2].
+> This secret value is a random number known as a [**Canary**](https://en.wikipedia.org/wiki/Buffer_overflow_protection#Canaries), and it is a common technique used to defend against buffer overflow attacks. The term "Canary" is a reference to the historic practice of using canaries in coal mines to warn miners of toxic gases, which is another somber story[^2].
 
-### Calling Convention
+### x86_64 Calling Convention
 
-There are many details defined by calling convention, since we are focusing on syscall topic, only the following details are important to us:
+There are many details defined by the calling convention, but for the purpose of our discussion on system calls, the following specifications are the most important:
 
  - **Where parameters are placed.**
  - **The order in which parameters are passed.**
@@ -241,7 +243,7 @@ There are many details defined by calling convention, since we are focusing on s
  - **How return values are delivered back to the caller.**
  - **Which registers are guaranteed to have the same value before and after the call.**
 
-From the two examples above, we already know the first three, and rest of them is defined in the following specification(defines at `arch/x86/entry/calling.h` in Linux kernel source code):
+From the two examples above, we already know the first three, and remain of them is defined in the following specification, you can also find it at [here](https://elixir.bootlin.com/linux/v6.6.6/source/arch/x86/entry/calling.h):
 
 ```plain
 x86 function call convention, 64-bit:
@@ -266,9 +268,9 @@ rdi rsi rdx rcx r8-9 | rbx rbp [*] r12-15 | r10-11             | rax, rdx [**]
      Fortunately this case is rare in the kernel.
 ```
 
-Normally, the `callee-saved` means the caller can assume that the value of the register is not changed after the call, so the function itself should save the origin value of the register before using it for other purposes. And the `callee-clobbered` means the caller can not assume that so it need to manually save it before the call if it want to use it after the call.
+Normally, the *callee-save*" means the caller can assume that the value of the register is not changed after the function call, so the callee function itself is responsible for saving the original value in these registers before using it for other purposes. On the other hand, the *callee-clobbered* means the caller cannot assume the register value is preserved, so the caller needs to manually them before the function call if it wants to use it afterwards.
 
-Now we have a necessary understanding of calling convention, let's go deeper and see how syscall is implemented.
+Now that we have a necessary understanding of the calling convention, let's go deeper and examine how system calls are implemented.
 
 ## Userspace Stub
 
@@ -596,22 +598,22 @@ Basically, the `syscall` instruction backs up some userspace context information
 
 It's important to note that all of this occurs within a single `syscall` instruction, so set `RIP` to point to kernel space does make sense. After executing this instruction, we are finally in kernel space.
 
-## Prepare runnable kernel
+## Prepare bootable kernel
 
-To show exactly what happened, we will use QEMU[^6] and GDB to debugging a running kernel. But first, we need to prepare a runnable Linux kernel image, that means we need to compile the kernel.
+To examine what happened in the kernel space, we will use QEMU[^6] and GDB to debugging a running kernel. But first, we need to create a bootable Linux kernel image, which means we need to compile the kernel.
 
 ### Compiling the Linux kernel
 
-For a general C project, the basic building progress is in three steps, even the Linux kernel has no difference.
+For a general C project, the basic build process typically follows three steps, and the Linux kernel is no exception:
 
 #### Get the source
 
-You can get every released Linux kernel source from [kernel.org](https://kernel.org). I will use the version [6.6.6](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.6.tar.xz) for now, but you can use any version you like. Also don't forget download the [GPG signature of the version](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.10.2.tar.sign).
+You can obtain the source code for every released Linux kernel version from the official [kernel.org](https://kernel.org) website. In this post, I will use version [6.6.6](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.6.tar.xz), but you can use any version you prefer. Additionally, make sure to download the [GPG signature file for the kernel version](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.10.2.tar.sign) you choose.
 
 ```shell
-# Download source tarball
+# Download source
 curl -OL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.6.tar.xz
-# Download signature
+# Download the corresponding signature
 curl -OL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.6.tar.sign
 # Uncompressing source
 unxz linux-6.6.6.tar.xz
@@ -621,7 +623,7 @@ gpg2 --locate-keys torvalds@kernel.org gregkh@kernel.org
 gpg2 --verify linux-6.6.6.tar.sign
 ```
 
-If everything was right, you will see the following output(make sure you see `gpg: Good signature` in the output), that means the kernel source tree you got was not modified or tampered after releasd by the kernel developer.
+If everything is set up correctly, you should see the following output after verifying the GPG signature(make sure you see `gpg: Good signature` in the output):
 
 ```plain
 gpg: assuming signed data in 'linux-6.6.6.tar'
@@ -633,20 +635,22 @@ gpg:          There is no indication that the signature belongs to the owner.
 Primary key fingerprint: 647F 2865 4894 E3BD 4571  99BE 38DB BDC8 6092 693E
 ```
 
-Then extract the `.tar` file, and we will get the kernel source tree `linux-6.6.6/`.
+After verifying the signature, extract the `.tar` file to get the kernel source tree `linux-6.6.6/`.
 
 #### Configuration
 
-Since we only want to debugging the progress of syscall, it's enough to just use the default configuration.
+Since our focus is on examining the system call implementation, we can use the default kernel configuration.
 
 ```shell
 cd linux-6.6.6/
 make defconfig
 ```
 
-You can also use the configuration that your Linux distribution use if you like[^7] most distribution save configuration under `/boot/config-$(uname -r)`. If you are using Arch Linux like me, you can find the configuration at `/proc/config.gz`.
+you can also use the kernel configuration that your Linux distribution employs if you like[^7], as many distributions save the configuration under `/boot/config-$(uname -r)`. If you are using Arch Linux like me, you will find it at `/proc/config.gz`.
 
-If you use a custom configuration, you need to rename it as `.config`(may need uncompress first) and put it under the root of kernel source tree. Then run `make olddefconfig` to use it. There are some useful `make` target for configuration:
+If you decide to use a custom kernel configuration, you will need to rename the configuration file to `.config` (and potentially uncompress it first) and place it in the root of the kernel source tree (`linux-6.6.6/` in our case). Then, you need to run `make olddefconfig` to apply the custom configuration.
+
+There are also some useful `make` targets for managing the kernel configuration:
 
 ```shell
 # ncurse based TUI
@@ -661,30 +665,30 @@ make help
 
 {{< admonition warning "Kernel Debug Info" >}}
 
-It's important to enable the kernel debug info, delete or comment out the `CONFIG_DEBUG_INFO_NONE` line, and set the `CONFIG` to `y`. Then run `make olddefconfig` to make the change effective.
+It's important to enable the kernel debug information. To do this, you should delete or comment out the `CONFIG_DEBUG_INFO_NONE` option in the kernel configuration, and set the option `CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT` to `y`. Then, run `make olddefconfig` to make the change effective.
 
-For kernel before 5.19.8, there is another config called `CONFIG_DEBUG_INFO=y` to enable the debug info.
+For kernel versions prior to `5.19.8`, there is an alternative configuration option called `CONFIG_DEBUG_INFO=y` that you can use to enable the debug information.
 
 {{< /admonition >}}
 
 
-We will also add a custom building tag to this configuration, but it's not necessary, feel free to skip this step.
+We will also add a custom build tag to the kernel configuration, but this step is optional, feel free to skip it.
 
 ```shell
-# Add building tag(optional)
+# (optional)Add a build tag syscall_irl
 ./scripts/config --file .config --set-str LOCALVERSION "syscall_irl"
 ```
 
-#### Compile
+#### Compiling
 
-Now everything is ready, there is only one big thing left. Be careful your CPU may catch fire!
+Now that everything is ready, there is just one big thing left. Be careful your CPU might catch fire!
 
 ```shell
-# Build with all available cores, you can change the -j flag to the number of cores you want to use
+# Compile the kernel with all available cores, you can change the -j flag to the number of cores you want to use
 make -j$(nproc) 2>&1 | tee build.log
 ```
 
-It takes about 64 seconds on my `i7-13700K` platform with all available cores. If no error was encountered, you should see the following output in the end.
+It takes about 64 seconds to compile the Linux kernel on my `i7-13700K` platform when using all available CPU cores. As long as no errors are encountered during the build process, you should see the following output at the end:
 
 ```plain
 ...
@@ -698,30 +702,30 @@ It takes about 64 seconds on my `i7-13700K` platform with all available cores. I
 Kernel: arch/x86/boot/bzImage is ready  (#1)
 ```
 
-The last serval steps build the uncompressed linux kernel `vmlinux`, and convert it into a bootable compressed kernel image `bzImage`. You can find it at `arch/x86/boot/bzImage` as the output said.
+The final steps in the compilation process build the uncompressed Linux kernel `vmlinux`, and then convert it into a bootable compressed kernel image `bzImage`. You can find the resulting `bzImage` file at `arch/x86/boot/bzImage`, as indicated in the output.
 
 ### Make a root filesystem
 
-Now you can actually run the bootable kernel with `qemu`.
+Now you can actually boot the kernel in QEMU.
 
 ```shell
 qemu-system-x86_64 -kernel arch/x86/boot/bzImage
 ```
 
-But you will find the kernel panics immediately, that's because we provided the kernel itself, but there is still a signaficant part missing: the root filesystem that makes the system work. We need to attach an `initramfs`[^8] that contains a basic root filesystem to provide a functional environment.
+But you will find that the kernel panics immediately. This is because we have only provided the kernel image itself, but a significant part is still missing: the root filesystem that makes the system functional. We need to attach an `initramfs`[^8] that contains a basic root filesystem to provide a working environment.
 
 #### Filesystem structure
 
-Since we use `initramfs` to only run the kernel, not for switching to a real disk-based root filesystem, we only need to create three directories, `sys/` for mount `sysfs`, `proc/` for `procfs`, and `bin/` for all necessary binaries.
+Since we are using the `initramfs` solely to run the kernel, and not for switching to a real disk-based root filesystem, we only need to create three directories in this root filesystem: `sys/` for mounting `sysfs`, `proc/` for mounting `procfs`, and `bin/` for all necessary binaries.
 
 ```shell
-# Make a directory that contains the whole initramfs
+# Make a directory that contains the whole content of the initramfs
 mkdir -p initramfs/{bin,proc,sys}
 ```
 
 #### Copy necessary binaries
 
-There are quite a few binaries we need, instead of manually including these small components, we will use `busybox`, which staticly compiled and included many utils into one single file. You can download the `busybox` binary [here](https://www.busybox.net/downloads/binaries/), or compile from [source](https://www.busybox.net/downloads/) if you like.[^9]
+There are quite a few binaries we need, instead of manually including all these small components, we will use `busybox`, which staticly compiled and included many utils into one single file. You can download the `busybox` binary [here](https://www.busybox.net/downloads/binaries/), or compile from [source](https://www.busybox.net/downloads/) if you like.[^9]
 
 ```shell
 # Download busybox-1.35.0 static binary
@@ -730,9 +734,9 @@ curl -OL https://www.busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/bus
 chmod +x busybox
 ```
 
-The `busybox` binary is a special executable that will take it's first argument into account, which includes it's filename. So if you rename it or make a symbol link into some Unix utility name, like `ls`, it will behave exactly  like `ls`. `busybox --list` shows all binaries it supports.
+The `busybox` binary is a special executable that takes its first argument into account, including the filename. So, if you rename it or create a symbolic link to it using a Unix utility name, such as `ls`, it will behave exactly like that utility. Running `busybox --list` will print all the binary functions it supports.
 
-With `busybox`, we can just put it under `initramfs/bin/`, and make symbol links to it with different utility names.
+With `busybox`, we can simply place it in the `initramfs/bin/` directory and create symbolic links to it with different utility names.
 
 ```shell
 for cmd in $(./busybox --list); do ln -s busybox $cmd; done
@@ -740,25 +744,26 @@ for cmd in $(./busybox --list); do ln -s busybox $cmd; done
 
 #### Create init script
 
-Now all necessary binaries are ready, but we still need to mount the `sysfs` and `procfs`, and the most important, specify the first userspace program. To do that, we will create an `init` script to handle these tasks.
+`busybox` provides all the necessary binaries, but we still need to mount the `sysfs` and `procfs`, and most importantly, specify the first userspace program to execute. To handle these tasks, we will create an init script.
 
 ```bash
 cat <<EOF > initramfs/init
 #!/bin/sh
 mount -t proc none /proc
 mount -t sysfs none /sys
-
-echo "Boot took $(cut -d' ' -f1 /proc/uptime) seconds"
-
 exec /bin/sh
 EOF
+```
 
+The Linux kernel will run `/init` in the `initramfs` automatically after booting. So we need to make sure the script is executable.
+
+```shell
 chmod +x initramfs/init
 ```
 
 #### Make initramfs image
 
-We will use `cpio` to make the image file `initramfs.cpio.gz`.
+We will use `cpio` to create the image file `initramfs.cpio.gz`.
 
 ```shell
 cd initramfs
@@ -774,45 +779,44 @@ This time, let's try to boot the kernel with the `initramfs`.
 qemu-system-x86_64 -kernel arch/x86/boot/bzImage -initrd initramfs.cpio.gz
 ```
 
-If everything is fine, you should see the boot sequence in a new window, and the `sh` prompt. There may be some kernel messages after the `sh` got executed, you can hit enter for serval times to make sure the `sh` is running.
+If everything works as expected, you should see the boot sequence in a new window, and eventually a `sh` prompt. There may be some additional kernel messages that appear after the `sh` prompt is presented, so you can hit `Enter` a few times to ensure the `sh` shell is running properly.
 
 ![qemu](./qemu.png)
 
-As you can see, the `uname` shows the build tag `syscall_irl` we added in the compiling step. That means we have successfully boot the kernel we compiled, and have a functional environment to explore. It's time to do some insteresting stuff!
+As you can see, the `uname` output shows the custom build tag `syscall_irl` that we added during the configuration step. This confirms that we have successfully booted the kernel we compiled and have a functional environment to explore. It's time to dive in and start doing something interesting!
 
 ## Debug running kernel in QEMU
 
 ### Attach GDB to QEMU
 
-QEMU provides the ability for attaching GDB to the program running on it, so we can use GDB to debug the kernel, and see everything at the runtime.
+QEMU provides the capability to attach a GDB debugger to the program running within the QEMU environment. This allows us to use GDB to debug the Linux kernel and examine everything at runtime.
 
 ```shell
 # Boot kernel with supporting gdb remote attach
 qemu-system-x86_64 -kernel arch/x86/boot/bzImage -initrd initramfs.cpio.gz -append "nokaslr" -s -S
 ```
 
-Let me explain the newly added flags
+Explaination of the newly added flags:
 
 - `-append "nokaslr"`: add kernel commandline parameter `nokaslr` to disable KASLR (Kernel Address Space Layout Randomization), otherwise the GDB breakpoint may not work as expected.
 - `-s`: a shorthand for `-gdb tcp::1234`, which listen on tcp port 1234 that GDB can attach remotely.
 - `-S`: freeze the CPU at startup, so we can control the execution from GDB at the very beginning.
 
-You can see the QEMU window will prompt a message about dislay not initialized, now start a new terminal and attach GDB to QEMU.
+You will see the QEMU window prompt a message about "display not initialized". This is because the execution is currently paused. Now, open a new terminal and attach GDB to the running QEMU instance.
 
 ```gdb
-# Although we have a remote port, gdb still need a program file to read symbols.
 $ gdb -q vmlinux
 Reading symbols from vmlinux...
-(gdb) target remote :1234
+(gdb) target remote :1234  # Attach to QEMU gdbserver at port 1234
 0x000000000000fff0 in exception_stacks ()
 (gdb)
 ```
 
-The execution stopped at the address `0x000000000000fff0` for now. Which means it's the first instruction the CPU will execute.
+The execution has stopped at the address `0x000000000000fff0`, which is the first instruction the CPU will execute.
 
 ### The syscall entry
 
-In last blog, we know the CPU jumped to the address of register `IA32_LSTAR` after the `syscall` instruction is executed. In Linux, this register called `MSR_LSTAR`, where the defines located at `arch/x86/asm/msr-index.h`
+In the previous chapter, we learned that the CPU jumps to the address stored in the `IA32_LSTAR` register after the syscall instruction is executed. In Linux, this register is addressed as `MSR_LSTAR`, and the definition is located in the `arch/x86/asm/msr-index.h` header file.
 
 ```c
 // arch/x86/asm/msr-index.h
@@ -830,9 +834,9 @@ In last blog, we know the CPU jumped to the address of register `IA32_LSTAR` aft
 #define MSR_TSC_AUX 0xc0000103 /* Auxiliary TSC */
 ```
 
-From the comment, we can see the name `LSTAR` stands for **L**ong mode **S**yscall **TAR**get. There is also a `STAR` register for legacy system.
+From the comment, we can see that the `LSTAR` name stands for "**L**ong mode **S**yscall **Tar**get". There is also a `STAR` register used for legacy systems.
 
-After simply search the kernel source, we can find the `MSR_LSTAR` was initialized in `syscall_init()` during the boot sequence.
+After a simple search through the kernel source, we can find that the `MSR_LSTAR` register is initialized in the `syscall_init()` function during the boot sequence.
 
 ```c
 void syscall_init(void)
@@ -872,7 +876,7 @@ void syscall_init(void)
 }
 ```
 
-At line 4, the `MSR_LSTAR` is set to a symbol `entry_SYSCALL_64`. Now let's set a breakpoint at `syscall_init()`, and continue the boot sequence to see what is `entry_SYSCALL_64`.
+At line 4, the `MSR_LSTAR` register is set to the symbol `entry_SYSCALL_64`. Now, let's set a breakpoint in GDB at the `syscall_init()` and continue the boot sequence to see what this `entry_SYSCALL_64` symbol represents.
 
 ```gdb
 (gdb) b syscall_init
@@ -890,7 +894,7 @@ Breakpoint 1, syscall_init () at arch/x86/kernel/cpu/common.c:2073
 entry_SYSCALL_64 in section .text
 ```
 
-From the symbol info we can see the `entry_SYSCALL_64` is a symbol in `.text` section, which means it is the entry point of syscall at the address of `0xffffffff82000040`, we can use GDB to find out the line info.
+From the symbol information, we can see that `entry_SYSCALL_64` is a symbol located in the `.text` section, which means it is the entry point for the 64-bit system call at the address `0xffffffff82000040`. We can use GDB to find the corresponding source code line information for this symbol.
 
 ```gbd
 (gdb) info line entry_SYSCALL_64
@@ -898,7 +902,7 @@ Line 89 of "arch/x86/entry/entry_64.S" starts at address 0xffffffff82000040 <ent
 and ends at 0xffffffff82000044 <entry_SYSCALL_64+4>.
 ```
 
-So GDB tell us this symbol is defined at the line 89 of file [`arch/x86/entry/entry_64.S`](https://elixir.bootlin.com/linux/v6.6.6/source/arch/x86/entry/entry_64.S), this file contains some assembly code, So let's walk through it line by line. To keep the content more focus, I will skip some unrelated part.
+So GDB has informed us that the `entry_SYSCALL_64` symbol is defined at line 89 of the file [`arch/x86/entry/entry_64.S`](https://elixir.bootlin.com/linux/v6.6.6/source/arch/x86/entry/entry_64.S), which contains some assembly code. Let's walk through it line by line, but to keep the content focused, I will skip over some unrelated parts.
 
 ```asm
 SYM_CODE_START(entry_SYSCALL_64)
@@ -906,34 +910,34 @@ SYM_CODE_START(entry_SYSCALL_64)
 	ENDBR
 ```
 
-The `SYM_CODE_START` is a assembler annotation for interrupt handlers and similar where the calling convention is not the C one[^10], it defines `entry_SYSCALL_64` as a function-like symbol(address of some procedure) where CPU can jump to. In our case, it's the first code executed in the kernel space when syscall happens. The following is some compiler related stuff, which we will not discuss here.
+The `SYM_CODE_START` is a assembler annotation for interrupt handlers and similar where the calling convention is not the C one[^10]. It defines `entry_SYSCALL_64` as a function-like symbol(i.e. the address of a procedure) that the CPU can jump to. In our case, this is the first code executed in kernel space when a system call occurs. The following lines are some compiler related details, which we will not discuss here.
 
 ```asm
 	swapgs
 ```
 
-The `GS` register is a limited form of segmentation register which only the base address(GSBase) is need to calculate the effective address[^11], just like a pointer to an array. So when read from `gs[:0x10]`, the actually address is `GSBase + 0x10`. In the file `arch/x86/asm/msr-index.h` we previously saw, there are two GSBase registers `MSR_GS_BASE` and `MSR_KERNEL_GS_BASE`. `GS` register use the value in `MSR_GS_BASE` as the GSBase, and `swapgs` will swap the value in `MSR_GS_BASE` and `MSR_KERNEL_GS_BASE`, which means change the value of GSBase. The `MSR_KERNEL_GS_BASE` stores the address of the kernel's per-CPU structure, so after `swapgs`, we can suddenly access some kernel data structure with `GS` register.
+The `gs` register is a limited form of segmentation register, where only the base address(GSBase) is needed to calculate the effective address[^11], similar to a pointer to an array. So, when reading from `gs[:0x10]`, the actual address is `GSBase + 0x10`. In the `arch/x86/asm/msr-index.h` file we saw earlier, there are two GSBase registers: `MSR_GS_BASE` and `MSR_KERNEL_GS_BASE`. The `gs` register uses the value in `MSR_GS_BASE` as the GSBase, and the `swapgs` instruction swaps the values in `MSR_GS_BASE` and `MSR_KERNEL_GS_BASE`, effectively changing the GSBase value. The `MSR_KERNEL_GS_BASE` stores the address of the kernel's per-CPU structure, so after the `swapgs` instruction, we can suddenly access some kernel data structures using the `gs` register.
 
 ```asm
 	/* tss.sp2 is scratch space. */
 	movq	%rsp, PER_CPU_VAR(cpu_tss_rw + TSS_sp2)
 ```
 
-Save the value in `rsp` register to a per CPU scratch space `tss.sp2`[^12], so we can use `rsp` for other purpose.
+Save the value in the `rsp` register to a per-CPU scratch space `tss.sp2`[^12], so that we can use the `rsp` register for other purposes.
 
 ```asm
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
 ```
 
-This is another crucial part of the system call entry process: to switches the page table from the user-space page table to the kernel's page table. `CR3`[^13] is a control register that holds the physical address of the top-level page table (PML4 in x86_64). The `SWITCH_TO_KERNEL_CR3` is a macro that will clear `PTI_USER_PCID_BIT` and `PTI_USER_PGTABLE_BIT` to switch CR3 to kernel pagetables.
+This is another crucial part of the system call entry process: switching the pagetable from the userspace pagetable to the kernel's pagetable. `CR3`[^13] is a control register that holds the physical address of the top-level pagetable (PML4 in x86_64). The `SWITCH_TO_KERNEL_CR3` macro will clear the `PTI_USER_PCID_BIT` and `PTI_USER_PGTABLE_BIT` to switch the `CR3` register to the kernel's pagetables.
 
-You may wonder how could this code even be executed before switching address space, won't the address of the instruction be somewhere in userspace? Well, this behavior is exactly by design of how the kernel and userspace interaction is managed. In x86_64 Linux, the virtual address space is typically split between userspace and kernel space[^14]. The upper half (usually from 0xffff800000000000 and above) is always reserved for the kernel, and mapped to a portion of the kernel area. So some kernel code(including this syscall entry) do locate in the user address space and can be executed before and after switching to kernel pagetable, because they have the same virtual address in both user and kernel pagetable.
+You may wonder how could this code even be executed before switching the address space, won't the address of these instructions be somewhere in user address space? Well, this behavior is exactly by design in how the kernel and userspace interaction is managed. In x86_64 Linux, the virtual address space is typically split between userspace and kernel space[^14]. The upper half (usually from `0xffff800000000000` and above) is always reserved for the kernel and mapped to a portion of the kernel area. This means some kernel code, including the syscall entry, is located in the user address space and can be executed before and after switching to the kernel pagetable, as they have the same virtual address in both user and kernel pagetable.
 
 ```asm
 	movq	PER_CPU_VAR(pcpu_hot + X86_top_of_stack), %rsp
 ```
 
-The `PER_CPU_VAR(pcpu_hot + X86_top_of_stack)` is where the per-CPU kernel stack located, by setting the stack pointer register `rsp` to it, we can use some stack related instructions like `push`, `pop` and `call` in the kernel space.
+The `PER_CPU_VAR(pcpu_hot + X86_top_of_stack)` expression gives the address of the per-CPU kernel stack. By setting the stack pointer register `rsp` to this address, we can now use stack-related instructions like `push`, `pop`, and `call` within the kernel space.
 
 ```asm
 	/* Construct struct pt_regs on stack */
@@ -948,7 +952,7 @@ SYM_INNER_LABEL(entry_SYSCALL_64_after_hwframe, SYM_L_GLOBAL)
 	PUSH_AND_CLEAR_REGS rax=$-ENOSYS
 ```
 
-This is what "context switch" literaly mean, save current registers on the stack. The order of pushing registers on stack is crucial because it actually construct a `struct pt_regs` on the stack like the comment said.
+This is what a "context switch" literaly means: saving the current register state onto the stack. The order in which the registers are pushed onto the stack is crucial, as it will construct a `struct pt_regs` on the stack, as the comment indicates.
 
 ```c
 struct pt_regs {
@@ -987,7 +991,7 @@ struct pt_regs {
 };
 ```
 
-Since the stack grows from higher address to lower, we need to push registers on stack in the reverse order of the fields defined in `struct pt_regs`. The `PUSH_AND_CLEAR_REGS` is a trivial macro that will push from `di` to `r15` on stack and then clear them. It also set the `rax`(the return value) to `-ENOSYS` as a default return value.
+Since the stack grows from higher to lower addresses, we need to push the registers onto the stack in the reverse order of the fields defined in `struct pt_regs`. The `PUSH_AND_CLEAR_REGS` macro will push the registers from `di` to `r15` onto the stack and then clear them. It also sets the `rax` register (used for the return value) to `-ENOSYS` as a default return value.
 
 ```asm
 	/* IRQs are off. */
@@ -1004,7 +1008,7 @@ Since the stack grows from higher address to lower, we need to push registers on
 
 ### Syscall handler
 
-Now a complete `struct pt_regs` has been constructed on stack, which means the `rsp` is now a pointer `struct pt_regs*` to the saved registers. Then following the C calling convention, set the first two function arguments `rdi` and `rsi` to `rsp` and `eax`, which is `struct pt_regs*` and the syscall number respectively. So the `do_syscall_64` is the syscall handler, we can use GDB to find the line info.
+Now, a complete `struct pt_regs` has been constructed on the stack, which means the `rsp` register is now a pointer to the saved registers `struct pt_regs*`. Then, following the C calling convention, the first two function arguments `rdi` and `rsi` are set to `rsp` and `eax`, respectively, which are the `struct pt_regs*` and the system call number. The `do_syscall_64` function is the system call handler, and we can use GDB to find the source code line information for this function.
 
 ```gdb
 (gdb) info line do_syscall_64
@@ -1013,7 +1017,7 @@ and ends at 0xffffffff81ec2554 <do_syscall_64+4>.
 (gdb)
 ```
 
-In the corresponding file, we can see the defination of `do_syscall_64`
+The defination of `do_syscall_64` is below:
 
 ```c
 __visible noinstr void do_syscall_64(struct pt_regs *regs, int nr)
@@ -1033,7 +1037,7 @@ __visible noinstr void do_syscall_64(struct pt_regs *regs, int nr)
 }
 ```
 
-The parameter list is exactly what we see in the assembly code. Skipping the trace points, the syscall handler logic is defined in `do_syscall_x64`:
+The parameter list of `do_syscall_64` is exactly what we see in the assembly code. Skipping the trace points, the syscall handler logic is actually defined in `do_syscall_x64`:
 
 ```c
 static __always_inline bool do_syscall_x64(struct pt_regs *regs, int nr)
@@ -1053,7 +1057,7 @@ static __always_inline bool do_syscall_x64(struct pt_regs *regs, int nr)
 }
 ```
 
-This handler use unsigned syscall numer to index actually syscall function from an array `sys_call_table`, which is defined as below:
+This handler uses the unsigned system call number to index into an array called `sys_call_table`, which contains the actual system call functions. The `sys_call_table` is defined as follows:
 
 ```c
 // arch/x86/entry/syscall_64.c
@@ -1068,7 +1072,7 @@ asmlinkage const sys_call_ptr_t sys_call_table[] = {
 };
 ```
 
-It list all syscalls and construct an array for indexing them. The full syscall list is defined in the file `arch/x86/include/generated/asm/syscalls_64.h`, but it's a compile-time generated header file, so we need to compile the kernel first to see its content, which we have done previously. In my kernel build, there are 454 syscalls in this header file, and the first four syscalls is in below.
+The `sys_call_table` lists all the syscalls and construct an array for indexing them. The full list is defined in the file `arch/x86/include/generated/asm/syscalls_64.h`, but it's a compile-time generated header file, so we need to compile the kernel first to see its content, which we have done previously. In my kernel build, there are 454 syscalls in this header file. The first four syscalls are listed below:
 
 ```c
 __SYSCALL(0, sys_read)
@@ -1077,7 +1081,7 @@ __SYSCALL(2, sys_open)
 __SYSCALL(3, sys_close)
 ```
 
-We can find the actually symbol for the `write` syscall by expanding the `__SYSCALL` macro, which is `__x64_sys_write`. So we can again use GDB to find the line info:
+We can find the actual symbol for the `write` system call by expanding the `__SYSCALL` macro, which reveals that the symbol is `__x64_sys_write`. We can then use GDB to find the source code line information for this function.
 
 ```gdb
 (gdb) info line __x64_sys_write
@@ -1085,7 +1089,7 @@ Line 646 of "fs/read_write.c" starts at address 0xffffffff8128b0d0 <__x64_sys_wr
 (gdb)
 ```
 
-And code in `fs/read_write.c` is below:
+And the code in `fs/read_write.c`:
 
 ```c
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
@@ -1095,7 +1099,7 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 }
 ```
 
-The macro `SYSCALL_DEFINE3` read the arguments from registers by following the C calling convention, and then call `ksys_write`, the finally syscall handler.
+The `SYSCALL_DEFINE3` macro reads the system call arguments from the registers, following the C calling convention, and then calls the `ksys_write` function, which is the final system call handler.
 
 ```c
 // fs/read_write.c
@@ -1120,11 +1124,11 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)
 }
 ```
 
-Now we have reach the actually logic of the `write` syscall. We can set a breakpoint on `ksys_write` to see will it be called and what arguments are passed.
+Now we have reached the actual logic of the `write` system call. We can set a breakpoint on the `ksys_write` function to see when it is called and what arguments are passed.
 
 ### Breakpoint on `ksys_write()`
 
-Since everything we print to the screen is done by `write`, it's very easy to hit the breakpoint, which means there will be many noise. To give a clear idea, we can continue executing and wait the `sh` to be executed, then we set the breakpoint, and run `echo syscall_irl` to see what will happen
+Since the `write` system call is used for almost all output to the screen, setting a breakpoint on it will likely result in many noise hits from various processes. To get a clearer understanding, we can continue execution until the sh shell is running, then set the breakpoint on `ksys_write` and run the `echo syscall_irl` command to observe what happens.
 
 ```gdb
 (gdb) c
@@ -1150,7 +1154,7 @@ Breakpoint 2, ksys_write (fd=1, buf=0x7f9abf5b9950 "syscall_irl\n", count=12) at
 1: $rip = (void (*)()) 0xffffffff8128afd0 <ksys_write>
 ```
 
-The breakpoint is hit! But there are something weird, there are two `write` was called, and in the first one's argument, `fd` is `3`, and `buf` is `echo syscall_irl\n`, then the second syscall is what we expect. Typically, there are only three file descriptor: `stdin(0)`, `stdout(1)` and `stderr(2)`, so `3` must be a file opened by `sh` itself. We can use `strace` to find out what it is.
+The breakpoint was hit as expected! However, there seems to be something unusual: two `write` system calls were made. In the first one, the `fd` argument is `3`, and the `buf` argument is "echo syscall_irl\n". This is weird, because the typical file descriptors for printing are `stdin(0)` or `stderr(2)`. The second `write` call appears to be the one we expected. So `3` must be a file opened by `sh` itself, we can use the `strace` utility to trace the system calls made by the `sh` shell and find out what the file descriptor `3` is.
 
 ```shell
 strace busybox sh
@@ -1162,7 +1166,7 @@ write(3, "echo syscall_irl\n", 17)      = 17
 close(3)                                = 0
 ```
 
-So it is a command history feature, we can ignore it by adding a condition to the breakpoint in GDB:
+So the first `write` call with file descriptor `3` is related to the command history feature of the `sh` shell. We can ignore this by adding a condition to the breakpoint in GDB:
 
 ```gdb
 (gdb) del 2 // Delete the #2 breakpoint for ksys_write we set previously
@@ -1182,13 +1186,13 @@ Breakpoint 3, ksys_write (fd=1, buf=0x7f82e39b7970 "syscall_irl\n", count=12) at
 Continuing. // "syscall_irl" is printed.
 ```
 
-Now GDB only break when `fd` is `1`, and if we continue the execution, you should see `syscall_irl` is printed to console.
+Now the GDB breakpoint will only trigger when the `fd` argument of `ksys_write` is `1`. If we continue the execution, we should see the `syscall_irl` is printed to the console.
 
-> You may wondering why only the prompt of `sh` does not hit the `write` breakpoint, but if you look at the previous output of `strace` carefully, you will notice the prompt is actually printed through the syscall `writev`, not `write`, so it won't hit.
+> You may wondering why the prompt of `sh` does not hit the breakpoint, but if you look at the previous output of `strace` carefully, you will notice that the prompt is actually printed through the syscall `writev`, not `write`, that's why it won't hit.
 
 ## Return to userspace
 
-It should be clear how syscall is done from user to kernel space, but how does the execution returns from kernel to userspace process? Just reverse what we have done before entering the kernel.
+It should be clear now how system call is implemented from user to kernel space, to return from kernel to userspace process, just reverse what we have done when entering the kernel.
 
 ```c
 	call	do_syscall_64		/* returns with IRQs disabled */
@@ -1230,9 +1234,9 @@ SYM_INNER_LABEL(entry_SYSRETQ_unsafe_stack, SYM_L_GLOBAL)
 	sysretq // return from kernel
 ```
 
-After the `do_syscall_64` returns in `entry_SYSCALL_64`, the context switch happens again to restore userspace context, then the pagetable is switched back to the user one, and `GSBase` also swapped to user base address. Then the `sysretq` is executed, which also do the reverse job of `syscall` instruction.
+After the `do_syscall_64` function returns, the context switch happens again to restore the userspace context. Then, the pagetable is switched back to the user pagetable, and the GSBase is also swapped to the user base address. Finally, the `sysretq` instruction is executed, which performs the reverse operations of the `syscall` instruction.
 
-The full operations of `sysret` can be found at [here](https://www.felixcloutier.com/x86/sysret#operation), and there are only few that matter
+The full operations of `sysret` can be found at [here](https://www.felixcloutier.com/x86/sysret#operation), and there are only few matter:
 
 ```plain
 IF (operand size is 64-bit)
@@ -1246,19 +1250,22 @@ RFLAGS := (R11 & 3C7FD7H) | 2; (* Clear RF, VM, reserved bits; set bit 1 *)
 CPL := 3; (* Set current protect ring to 3, the userspace *)
 ```
 
-After this instruction, the CPU will continue execute the next instruction of `syscall` in userspace. Our journey of syscall finally ended.
+After the `sysretq` instruction, the CPU will continue executing the instruction that comes after the original `syscall` instruction in userspace. This marks the end of our journey through the system call process.
 
 ## Summary
 
-In this blog, we first introduced some background knowledge like ABI and C Calling Converntion, then we write a simple program that will call `write` syscall and use GDB to walk through the assembly code before jump into kernel space. Next, we build a bootable kernel image from source and make an `initramfs` for it. Finally, we use QEMU and GDB to find out the magic happened in the kernel space, and how the execution return from kernel to userspace.
+In this blog post, we first introduced some background knowledge about the Application Binary Interface(ABI) and the C Calling Convention. Then, we wrote a simple program that calls the `write` system call and used GDB to walk through the assembly code before jumping into the kernel space.
 
+Next, we built a bootable kernel image from source and created an `initramfs` for it. Finally, we used QEMU and GDB to investigate what happens in the kernel space and how the execution returns from the kernel to user space.
+
+Throughout this journey, we uncovered the whole picture of the system call mechanism and the interaction between userspace and kernel.
 
 [^1]: https://github.com/golang/sys/blob/master/unix/README.md
 [^2]: https://en.wikipedia.org/wiki/Sentinel_species#Toxic_gases
 [^3]: We use `-O1` flag here to make the code less verbose but still verbose enough to express the idea.
 [^4]: The `__GI___libc_write` is just an alias to `write`.
 [^5]: Actually, there is another instruction `sysenter`, what it does is same to `syscall`, the only difference is that `sysenter` is an Intel instruction, and `syscall` is an AMD instruction. See [this page](https://wiki.osdev.org/SYSENTER) for more information.
-[^6]: You can get QEMU via your distribution's package manager, or download from https://www.qemu.org/download/ manually.
+[^6]: QEMU is a hardware emulator, you can get it via your distribution's package manager, or download from https://www.qemu.org/download/ manually.
 [^7]: That will cause a relatively longer compiling time, so for the purpose of this blog, I would not recommand using the configuration provided by the distribution.
 [^8]: You can also use a pesudo block device or even physical device if you like, but I won't cover this because it's not related to the topic.
 [^9]: The compiling steps is similar to Linux kernel, I will not cover it here.
