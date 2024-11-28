@@ -9,17 +9,15 @@ theme = "DoIt"
 enableGitInfo = false
 enableEmoji = true
 favicon = "/images/ica.png"
-title = "Aryan Sjet's Blog"
+title = "Sjet's Blog"
 
 hasCJKLanguage = true
 
 [params]
     # DoIt theme version
     version = "0.3.X"
-    description = "Aryan Sjet's Blog"
+    description = "Sjet's Blog"
     keywords = [
-        "Aryan Sjet",
-        "Aryan",
         "Sjet",
         "ASjet",
         "Blog",
@@ -67,7 +65,7 @@ hasCJKLanguage = true
     themeChangeMode = "switch"
     [params.header.title]
         logo = "/favicon.png"
-        name = "AryanSjet"
+        name = "Sjet"
 
 [params.footer]
     enable = true
@@ -83,7 +81,7 @@ hasCJKLanguage = true
         enable = true
         social = true
         avatarURL = "/images/avatar.png"
-        title = "Aryan Sjet"
+        title = "Sjet"
         subtitle = "Think different."
         typeit = true
 
