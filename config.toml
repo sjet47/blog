@@ -23,7 +23,7 @@ hasCJKLanguage = true
         "Blog",
     ]
     defaultTheme = "light"
-    gitRepo = "https://github.com/ASjet/blog"
+    gitRepo = "https://github.com/sjet47/blog"
     dateFormat = "2006-01-02"
     images = [
         "/images/avatar.png",
@@ -91,7 +91,7 @@ hasCJKLanguage = true
 
 [params.social]
     LinkedIn = "linhao-sun"
-    GitHub = "github.com/ASjet"
+    GitHub = "github.com/sjet47"
     Email = "contact@asjet.dev"
 
 [params.section]
