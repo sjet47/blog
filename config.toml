@@ -18,6 +18,7 @@ hasCJKLanguage = true
     version = "0.3.X"
     description = "Sjet's Blog"
     keywords = [
+        "sjet47",
         "Sjet",
         "ASjet",
         "Blog",
@@ -33,7 +34,7 @@ hasCJKLanguage = true
     license = '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
 
     [params.app]
-        title = "ASjet-Blog"
+        title = "Sjet-Blog"
         noFavicon = false
         iconColor = "#767472"
         titleColor = "#767472"
@@ -146,7 +147,7 @@ hasCJKLanguage = true
         [params.page.comment.giscus]
             enable = true
             # owner/repo
-            dataRepo = "ASjet/blog"
+            dataRepo = "sjet47/blog"
             dataRepoId = "MDEwOlJlcG9zaXRvcnkzNjQyMjkyMDU="
             dataCategory = "General"
             dataCategoryId = "DIC_kwDOFbWyVc4Cd8QA"
@@ -216,8 +217,8 @@ hasCJKLanguage = true
         identifier = "github"
         pre = "<i class='fab fa-github fa-fw'></i>"
         post = ""
-        name = "Github/ASjet"
-        url = "https://github.com/ASjet"
+        name = "Github/sjet47"
+        url = "https://github.com/sjet47"
         title = "GitHub"
         weight = 6
 
@@ -247,9 +248,9 @@ hasCJKLanguage = true
 
 
 [author]
-    name = "ASjet"
+    name = "Sjet"
     email = "sjet@asjet.dev"
-    link = "https://github.com/ASjet"
+    link = "https://github.com/sjet47"
     avatar = "/images/avatar.png"
 
 
